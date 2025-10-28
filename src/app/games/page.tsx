@@ -42,7 +42,7 @@ export default function BrowseGamesPage() {
       seller: 'ProGamer123',
       rating: 4.8,
       reviews: 156,
-      image: '/api/placeholder/300/200',
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center',
       description: 'Rare legendary weapon with fire damage bonus',
       rarity: 'Legendary',
       level: 85
@@ -57,7 +57,7 @@ export default function BrowseGamesPage() {
       seller: 'RankMaster',
       rating: 4.9,
       reviews: 89,
-      image: '/api/placeholder/300/200',
+      image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center',
       description: 'Diamond tier account with all champions unlocked',
       rarity: 'Premium',
       level: 30
@@ -72,7 +72,7 @@ export default function BrowseGamesPage() {
       seller: 'PokeMaster',
       rating: 4.7,
       reviews: 234,
-      image: '/api/placeholder/300/200',
+      image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&h=200&fit=crop&crop=center',
       description: 'Collection of shiny and rare Pokemon',
       rarity: 'Rare',
       level: 40
@@ -87,7 +87,7 @@ export default function BrowseGamesPage() {
       seller: 'SkinTrader',
       rating: 4.6,
       reviews: 67,
-      image: '/api/placeholder/300/200',
+      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop&crop=center',
       description: 'Factory New Karambit Fade knife skin',
       rarity: 'Covert',
       level: 1
@@ -102,7 +102,7 @@ export default function BrowseGamesPage() {
       seller: 'VBuckStore',
       rating: 4.5,
       reviews: 445,
-      image: '/api/placeholder/300/200',
+      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center',
       description: '10,000 V-Bucks for Fortnite purchases',
       rarity: 'Common',
       level: 1
@@ -117,7 +117,7 @@ export default function BrowseGamesPage() {
       seller: 'ServerPro',
       rating: 4.9,
       reviews: 123,
-      image: '/api/placeholder/300/200',
+      image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=300&h=200&fit=crop&crop=center',
       description: 'Professional Minecraft server setup and configuration',
       rarity: 'Service',
       level: 1
@@ -299,7 +299,13 @@ export default function BrowseGamesPage() {
         <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer">
           <CardContent className="p-6">
             <div className="flex items-center space-x-6">
-              <div className="text-6xl">{item.image}</div>
+              <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                <img 
+                  src={item.image} 
+                  alt={item.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                />
+              </div>
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -338,45 +344,53 @@ export default function BrowseGamesPage() {
 
     return (
       <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="text-4xl">{item.image}</div>
-            <div className="flex items-center space-x-1">
+        <CardContent className="p-0">
+          {/* Large image at the top */}
+          <div className="w-full h-48 overflow-hidden rounded-t-lg bg-muted">
+            <img 
+              src={item.image} 
+              alt={item.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            />
+          </div>
+          
+          <div className="p-6">
+            <div className="flex items-start justify-between mb-3">
+              <Badge variant="secondary" className="text-xs">{item.game}</Badge>
               <Badge variant="default" className="text-xs">{item.rarity}</Badge>
             </div>
-          </div>
-          
-          <Badge variant="secondary" className="mb-3">{item.game}</Badge>
-          <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-            {item.name}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {item.description}
-          </p>
-          
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-              <span className="font-medium text-sm">{item.rating}</span>
-              <span className="text-xs text-muted-foreground">({item.reviews})</span>
+            
+            <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+              {item.name}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              {item.description}
+            </p>
+            
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-1">
+                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                <span className="font-medium text-sm">{item.rating}</span>
+                <span className="text-xs text-muted-foreground">({item.reviews})</span>
+              </div>
+              <Badge variant="outline" className="text-xs">{item.type}</Badge>
             </div>
-            <Badge variant="outline" className="text-xs">{item.type}</Badge>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-primary">${item.price}</div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="text-2xl font-bold text-primary">${item.price}</div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm">
+                  <Heart className="w-4 h-4" />
+                </Button>
+                <Button size="sm">Buy</Button>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <Heart className="w-4 h-4" />
-              </Button>
-              <Button size="sm">Buy</Button>
+            
+            <div className="pt-4 border-t">
+              <span className="text-xs text-muted-foreground">by {item.seller}</span>
             </div>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t">
-            <span className="text-xs text-muted-foreground">by {item.seller}</span>
           </div>
         </CardContent>
       </Card>
