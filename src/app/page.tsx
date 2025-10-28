@@ -102,7 +102,7 @@ export default function Home() {
 
             <div className="flex justify-center lg:justify-end">
               <div className="relative">
-                <VendorLogo size="xl" className="w-64 h-64 lg:w-80 lg:h-80" />
+                <VendorLogo size="4xl" className="w-80 h-80 lg:w-96 lg:h-96" />
                 <div className="absolute -top-4 -right-4 animate-bounce">
                   <div className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
                     Trusted!

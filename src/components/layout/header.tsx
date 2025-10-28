@@ -2,19 +2,27 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import VendorLogo from '@/components/ui/vendor-logo';
 import { ShoppingCart, User, Search, Shield } from 'lucide-react';
 
 const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-20 items-center justify-between">
           {/* Logo and Brand */}
           <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <VendorLogo size="md" />
+            <div className="w-24 h-24 relative">
+              <Image
+                src="/logo.png"
+                alt="vendors.gg Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold text-primary">vendors.gg</span>
               <span className="text-xs text-muted-foreground">Trusted Gaming Marketplace</span>
