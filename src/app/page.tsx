@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import VendorLogo from '@/components/ui/vendor-logo';
-import { Shield, Star, Users, Zap, ArrowRight, TrendingUp, Clock, CheckCircle, Search, Plus } from 'lucide-react';
+import { Shield, Star, Users, Zap, ArrowRight, TrendingUp, Clock, CheckCircle, Search, Plus, Minus } from 'lucide-react';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const allGames = [
     { name: 'New World', items: '2.8K+', color: 'bg-amber-600' },
@@ -42,8 +43,12 @@ export default function Home() {
     );
   }, [searchTerm]);
 
-  const displayedGames = searchTerm ? filteredGames : filteredGames.slice(0, 5);
-  const hasMoreGames = !searchTerm && allGames.length > 5;
+  const displayedGames = searchTerm ? filteredGames : (isExpanded ? filteredGames : filteredGames.slice(0, 5));
+  const hasMoreGames = !searchTerm && !isExpanded && allGames.length > 5;
+
+  const handleExpandToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -146,17 +151,26 @@ export default function Home() {
               </Card>
             ))}
             
-            {/* Show More Indicator */}
-            {hasMoreGames && (
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer group w-48 border-dashed border-2">
+            {/* Show More/Less Indicator */}
+            {(hasMoreGames || isExpanded) && (
+              <Card 
+                className="hover:shadow-lg transition-shadow cursor-pointer group w-48 border-dashed border-2"
+                onClick={handleExpandToggle}
+              >
                 <CardContent className="p-4 text-center flex flex-col items-center justify-center h-full">
                   <div className="w-12 h-12 bg-muted rounded-lg mx-auto mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Plus className="h-6 w-6 text-muted-foreground" />
+                    {isExpanded ? (
+                      <Minus className="h-6 w-6 text-muted-foreground" />
+                    ) : (
+                      <Plus className="h-6 w-6 text-muted-foreground" />
+                    )}
                   </div>
                   <h3 className="font-semibold mb-1 text-sm text-muted-foreground">
-                    +{allGames.length - 5} more
+                    {isExpanded ? 'Show less' : `+${allGames.length - 5} more`}
                   </h3>
-                  <p className="text-xs text-muted-foreground">games available</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isExpanded ? 'collapse list' : 'games available'}
+                  </p>
                 </CardContent>
               </Card>
             )}
