@@ -11,6 +11,8 @@ import { Heart, Search, Filter, Star, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface Listing {
   id: string;
@@ -50,6 +52,9 @@ interface BrowseGamesClientProps {
 }
 
 export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
+  const { data: session } = useSession();
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -132,6 +137,28 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
   const formatRating = (rating: number | string | null | undefined) => {
     const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
     return numRating && !isNaN(numRating) ? numRating.toFixed(1) : 'N/A';
+  };
+
+  const handleFavoriteToggle = async (listingId: string, e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation if button is inside a link
+    e.stopPropagation();
+    
+    if (!session) {
+      alert('Please sign in to add favorites');
+      return;
+    }
+
+    try {
+      const isFavorited = favorites.some(fav => fav.listing.id === listingId);
+      if (isFavorited) {
+        await removeFromFavorites(listingId);
+      } else {
+        await addToFavorites(listingId);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite. Please try again.');
+    }
   };
 
   return (
@@ -247,28 +274,36 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
         transition={{ duration: 0.6, delay: 0.3 }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
       >
-        {filteredListings.map((listing) => (
-          <Card key={listing.id} className="group hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="p-0">
-              <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                <Image
-                  src={listing.images?.[0] || listing.game?.image || '/placeholder-game.jpg'}
-                  alt={listing.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-200"
-                />
-                <div className="absolute top-2 right-2">
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 bg-black/20 hover:bg-black/40">
-                    <Heart className="h-4 w-4 text-white" />
-                  </Button>
+        {filteredListings.map((listing) => {
+          const isFavorited = favorites.some(fav => fav.listing.id === listing.id);
+          
+          return (
+            <Card key={listing.id} className="group hover:shadow-lg transition-shadow duration-200">
+              <CardHeader className="p-0">
+                <div className="relative aspect-video overflow-hidden rounded-t-lg">
+                  <Image
+                    src={listing.images?.[0] || listing.game?.image || '/placeholder-game.jpg'}
+                    alt={listing.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-8 w-8 p-0 bg-black/20 hover:bg-black/40"
+                      onClick={(e) => handleFavoriteToggle(listing.id, e)}
+                    >
+                      <Heart className={`h-4 w-4 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                    </Button>
+                  </div>
+                  {listing.rarity && (
+                    <Badge className="absolute top-2 left-2" variant="secondary">
+                      {listing.rarity}
+                    </Badge>
+                  )}
                 </div>
-                {listing.rarity && (
-                  <Badge className="absolute top-2 left-2" variant="secondary">
-                    {listing.rarity}
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
+              </CardHeader>
             
             <CardContent className="p-4">
               <div className="space-y-2">
@@ -331,7 +366,8 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
               </div>
             </CardFooter>
           </Card>
-        ))}
+        );
+        })}
       </motion.div>
 
       {/* Empty State */}

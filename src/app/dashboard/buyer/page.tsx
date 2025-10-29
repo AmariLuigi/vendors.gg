@@ -17,6 +17,8 @@ import {
   CheckCircle
 } from 'lucide-react';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
+import { useFavorites } from '@/hooks/useFavorites';
 
 // Mock data for buyer dashboard
 const mockOrders = [
@@ -72,6 +74,9 @@ const mockFavorites = [
 ];
 
 export default function BuyerDashboard() {
+  const { data: session } = useSession();
+  const { favorites, loading: favoritesLoading } = useFavorites();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'delivered':
@@ -149,10 +154,10 @@ export default function BuyerDashboard() {
               <span className="text-sm font-medium text-muted-foreground">Favorites</span>
             </div>
             <div className="mt-2">
-              <p className="text-2xl font-bold">47</p>
+              <p className="text-2xl font-bold">{favoritesLoading ? '...' : favorites.length}</p>
               <p className="text-xs text-red-600 flex items-center mt-1">
                 <TrendingUp className="h-3 w-3 mr-1" />
-                +12 this week
+                {favorites.length > 0 ? `${favorites.length} saved items` : 'No favorites yet'}
               </p>
             </div>
           </CardContent>
@@ -241,29 +246,41 @@ export default function BuyerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockFavorites.map((favorite) => (
-                <div key={favorite.id} className="flex items-center space-x-4 p-3 rounded-lg border">
-                  <div className="relative w-12 h-12 rounded-md overflow-hidden">
-                    <Image
-                      src={favorite.image}
-                      alt={favorite.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{favorite.title}</p>
-                    <p className="text-sm text-muted-foreground">{favorite.game}</p>
-                    <p className="text-sm text-muted-foreground">by {favorite.seller}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">${favorite.price}</p>
-                    <Button size="sm" className="mt-1">
-                      Buy Now
-                    </Button>
-                  </div>
+              {favoritesLoading ? (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground">Loading favorites...</p>
                 </div>
-              ))}
+              ) : favorites.length === 0 ? (
+                <div className="text-center py-4">
+                  <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground">No favorites yet</p>
+                  <p className="text-sm text-muted-foreground">Start browsing to save items you like!</p>
+                </div>
+              ) : (
+                favorites.slice(0, 3).map((favorite) => (
+                  <div key={favorite.id} className="flex items-center space-x-4 p-3 rounded-lg border">
+                    <div className="relative w-12 h-12 rounded-md overflow-hidden">
+                      <Image
+                        src={favorite.listing.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop&crop=center'}
+                        alt={favorite.listing.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{favorite.listing.title}</p>
+                      <p className="text-sm text-muted-foreground">{favorite.listing.game?.name}</p>
+                      <p className="text-sm text-muted-foreground">by {favorite.listing.account?.username || 'Unknown'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">${favorite.listing.price}</p>
+                      <Button size="sm" className="mt-1">
+                        Buy Now
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

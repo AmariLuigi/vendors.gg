@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   LayoutDashboard,
   Package,
@@ -15,7 +17,9 @@ import {
   Menu,
   Bell,
   User,
-  LogOut
+  LogOut,
+  Search,
+  MessageCircle
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -104,6 +108,17 @@ export default function SellerDashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: session } = useSession();
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
+  const handleNotificationClick = () => {
+    // TODO: Implement notification functionality
+    alert('Notifications clicked! (Feature coming soon)');
+    console.log('Notifications clicked');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,18 +156,56 @@ export default function SellerDashboardLayout({
             <div className="flex-1" />
 
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
+              <Link href="/games">
+                <Button variant="outline" size="sm" className="hidden sm:flex">
+                  <Search className="h-4 w-4 mr-2" />
+                  Browse Listings
+                </Button>
+              </Link>
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hidden sm:flex"
+                onClick={handleNotificationClick}
+              >
                 <Bell className="h-4 w-4" />
                 <span className="sr-only">Notifications</span>
               </Button>
-              <Button variant="ghost" size="icon">
-                <User className="h-4 w-4" />
-                <span className="sr-only">User menu</span>
-              </Button>
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <LogOut className="h-4 w-4" />
-                <span className="sr-only">Logout</span>
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-4 w-4" />
+                    <span className="sr-only">User menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/seller/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/seller/settings" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/chat" className="flex items-center">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Messages
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>

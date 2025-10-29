@@ -161,13 +161,21 @@ export const sessions = pgTable('sessions', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-// Verification tokens table for email verification and password reset
+// Verification tokens table
 export const verificationTokens = pgTable('verification_tokens', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').references(() => accounts.id),
   token: text('token').notNull().unique(),
   type: text('type').notNull(), // 'email_verification', 'password_reset'
   expires: timestamp('expires').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Favorites table
+export const favorites = pgTable('favorites', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => accounts.id).notNull(),
+  listingId: uuid('listing_id').references(() => listings.id).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -191,6 +199,7 @@ export const accountsRelations = relations(accounts, ({ many }) => ({
   }),
   sessions: many(sessions),
   verificationTokens: many(verificationTokens),
+  favorites: many(favorites),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -256,6 +265,7 @@ export const listingsRelations = relations(listings, ({ one, many }) => ({
     references: [subcategories.id],
   }),
   conversations: many(conversations),
+  favorites: many(favorites),
 }));
 
 // Conversations relations
@@ -302,5 +312,16 @@ export const verificationTokensRelations = relations(verificationTokens, ({ one 
   user: one(accounts, {
     fields: [verificationTokens.userId],
     references: [accounts.id],
+  }),
+}));
+
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  user: one(accounts, {
+    fields: [favorites.userId],
+    references: [accounts.id],
+  }),
+  listing: one(listings, {
+    fields: [favorites.listingId],
+    references: [listings.id],
   }),
 }));

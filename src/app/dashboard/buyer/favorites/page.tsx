@@ -20,114 +20,14 @@ import {
   Share2
 } from 'lucide-react';
 import Image from 'next/image';
-
-// Mock favorites data
-const mockFavorites = [
-  {
-    id: '1',
-    title: 'CS:GO Knife Skin - Karambit Fade',
-    game: 'Counter-Strike 2',
-    price: 750.00,
-    originalPrice: 850.00,
-    seller: 'SkinTrader',
-    sellerRating: 4.8,
-    image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop&crop=center',
-    condition: 'Factory New',
-    rarity: 'Covert',
-    addedDate: '2024-01-15',
-    isOnSale: true,
-    discount: 12,
-    views: 1250,
-    category: 'Skins'
-  },
-  {
-    id: '2',
-    title: 'Fortnite V-Bucks 13,500 Pack',
-    game: 'Fortnite',
-    price: 99.99,
-    originalPrice: 99.99,
-    seller: 'VBuckStore',
-    sellerRating: 4.5,
-    image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center',
-    condition: 'Digital',
-    rarity: 'Common',
-    addedDate: '2024-01-18',
-    isOnSale: false,
-    discount: 0,
-    views: 890,
-    category: 'Currency'
-  },
-  {
-    id: '3',
-    title: 'World of Warcraft Mythic Raid Boost',
-    game: 'World of Warcraft',
-    price: 299.99,
-    originalPrice: 349.99,
-    seller: 'RaidMasters',
-    sellerRating: 4.9,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center',
-    condition: 'Service',
-    rarity: 'Legendary',
-    addedDate: '2024-01-20',
-    isOnSale: true,
-    discount: 14,
-    views: 2100,
-    category: 'Services'
-  },
-  {
-    id: '4',
-    title: 'League of Legends Diamond Account',
-    game: 'League of Legends',
-    price: 450.00,
-    originalPrice: 450.00,
-    seller: 'RankMaster',
-    sellerRating: 4.7,
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center',
-    condition: 'Excellent',
-    rarity: 'Rare',
-    addedDate: '2024-01-22',
-    isOnSale: false,
-    discount: 0,
-    views: 1560,
-    category: 'Accounts'
-  },
-  {
-    id: '5',
-    title: 'Pokemon GO Shiny Collection',
-    game: 'Pokemon GO',
-    price: 125.50,
-    originalPrice: 140.00,
-    seller: 'PokeMaster',
-    sellerRating: 4.6,
-    image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&h=200&fit=crop&crop=center',
-    condition: 'Perfect',
-    rarity: 'Legendary',
-    addedDate: '2024-01-25',
-    isOnSale: true,
-    discount: 10,
-    views: 780,
-    category: 'Items'
-  },
-  {
-    id: '6',
-    title: 'Minecraft Premium Server Access',
-    game: 'Minecraft',
-    price: 29.99,
-    originalPrice: 29.99,
-    seller: 'MinecraftPro',
-    sellerRating: 4.4,
-    image: 'https://images.unsplash.com/photo-1578662015928-3badc8cce4c2?w=300&h=200&fit=crop&crop=center',
-    condition: 'Digital',
-    rarity: 'Common',
-    addedDate: '2024-01-28',
-    isOnSale: false,
-    discount: 0,
-    views: 450,
-    category: 'Services'
-  }
-];
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useFavorites } from '@/hooks/useFavorites';
 
 export default function BuyerFavoritesPage() {
+  const { data: session } = useSession();
+  const { favorites, favoritesLoading, removeFromFavorites } = useFavorites();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [gameFilter, setGameFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -135,10 +35,30 @@ export default function BuyerFavoritesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  const uniqueGames = [...new Set(mockFavorites.map(item => item.game))];
-  const uniqueCategories = [...new Set(mockFavorites.map(item => item.category))];
+  // Transform favorites data to match the expected format
+  const transformedFavorites = favorites.map(fav => ({
+    id: fav.id,
+    listingId: fav.listingId,
+    title: fav.listing?.title || 'Unknown Item',
+    game: fav.listing?.game?.name || 'Unknown Game',
+    price: parseFloat(fav.listing?.price || '0'),
+    originalPrice: parseFloat(fav.listing?.price || '0'),
+    seller: fav.listing?.seller ? `${fav.listing.seller.firstName} ${fav.listing.seller.lastName}` : 'Unknown Seller',
+    sellerRating: 4.5, // Default rating since we don't have this in our schema
+    image: fav.listing?.images?.[0] || fav.listing?.game?.image || '/placeholder-game.jpg',
+    condition: fav.listing?.condition || 'Unknown',
+    rarity: fav.listing?.rarity || 'Common',
+    addedDate: fav.createdAt,
+    isOnSale: false, // We don't have sale info in our schema
+    discount: 0,
+    views: fav.listing?.views || 0,
+    category: fav.listing?.category?.name || 'Unknown'
+  }));
 
-  const filteredFavorites = mockFavorites
+  const uniqueGames = [...new Set(transformedFavorites.map(item => item.game))];
+  const uniqueCategories = [...new Set(transformedFavorites.map(item => item.category))];
+
+  const filteredFavorites = transformedFavorites
     .filter(item => {
       const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            item.game.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -173,62 +93,76 @@ export default function BuyerFavoritesPage() {
     );
   };
 
-  const removeFromFavorites = (itemIds: string[]) => {
-    // In a real app, this would make an API call
-    console.log('Removing items:', itemIds);
-    setSelectedItems([]);
+  const handleRemoveFromFavorites = async (itemIds: string[]) => {
+    try {
+      for (const itemId of itemIds) {
+        const favorite = transformedFavorites.find(fav => fav.id === itemId);
+        if (favorite) {
+          await removeFromFavorites(favorite.listing.id);
+        }
+      }
+      setSelectedItems([]);
+    } catch (error) {
+      console.error('Error removing favorites:', error);
+      alert('Failed to remove favorites. Please try again.');
+    }
   };
 
-  const FavoriteCard = ({ item }: { item: typeof mockFavorites[0] }) => (
+  const FavoriteCard = ({ item }: { item: typeof transformedFavorites[0] }) => (
     <Card className={`group hover:shadow-lg transition-shadow ${viewMode === 'list' ? 'mb-4' : ''}`}>
-      <div className={`${viewMode === 'grid' ? 'flex flex-col' : 'flex flex-row'}`}>
-        {/* Image */}
-        <div className={`relative ${viewMode === 'grid' ? 'h-48' : 'w-48 h-32'} overflow-hidden`}>
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform"
-          />
-          {item.isOnSale && (
-            <Badge className="absolute top-2 left-2 bg-red-500 text-white">
-              -{item.discount}%
-            </Badge>
-          )}
-          <div className="absolute top-2 right-2 flex space-x-1">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
-              onClick={() => toggleItemSelection(item.id)}
-            >
-              <Heart 
-                className={`h-4 w-4 ${selectedItems.includes(item.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
-              />
-            </Button>
+      <Link href={`/listings/${item.listingId}`}>
+        <div className={`${viewMode === 'grid' ? 'flex flex-col' : 'flex flex-row'}`}>
+          {/* Image */}
+          <div className={`relative ${viewMode === 'grid' ? 'h-48' : 'w-48 h-32'} overflow-hidden`}>
+            <Image
+              src={item.image}
+              alt={item.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform"
+            />
+            {item.isOnSale && (
+              <Badge className="absolute top-2 left-2 bg-red-500 text-white">
+                -{item.discount}%
+              </Badge>
+            )}
+            <div className="absolute top-2 right-2 flex space-x-1">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleItemSelection(item.id);
+                }}
+              >
+                <Heart 
+                  className={`h-4 w-4 ${selectedItems.includes(item.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+                />
+              </Button>
+            </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <CardContent className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-          <div className={`${viewMode === 'list' ? 'flex justify-between items-start' : 'space-y-2'}`}>
-            <div className={`${viewMode === 'list' ? 'flex-1 pr-4' : ''}`}>
-              <h3 className="font-semibold text-lg line-clamp-2">{item.title}</h3>
-              <p className="text-sm text-muted-foreground">{item.game}</p>
-              <p className="text-sm text-muted-foreground">
-                by {item.seller}
-                <span className="ml-2 inline-flex items-center">
-                  <Star className="h-3 w-3 text-yellow-400 mr-1" />
-                  {item.sellerRating}
-                </span>
-              </p>
-              
-              <div className="flex items-center space-x-2 mt-2">
-                <Badge variant="outline" className="text-xs">
-                  {item.condition}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {item.rarity}
+          {/* Content */}
+          <CardContent className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
+            <div className={`${viewMode === 'list' ? 'flex justify-between items-start' : 'space-y-2'}`}>
+              <div className={`${viewMode === 'list' ? 'flex-1 pr-4' : ''}`}>
+                <h3 className="font-semibold text-lg line-clamp-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground">{item.game}</p>
+                <p className="text-sm text-muted-foreground">
+                  by {item.seller}
+                  <span className="ml-2 inline-flex items-center">
+                    <Star className="h-3 w-3 text-yellow-400 mr-1" />
+                    {item.sellerRating}
+                  </span>
+                </p>
+                
+                <div className="flex items-center space-x-2 mt-2">
+                  <Badge variant="outline" className="text-xs">
+                    {item.condition}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {item.rarity}
                 </Badge>
               </div>
             </div>
@@ -262,7 +196,8 @@ export default function BuyerFavoritesPage() {
             </div>
           </div>
         </CardContent>
-      </div>
+        </div>
+      </Link>
     </Card>
   );
 
@@ -362,7 +297,7 @@ export default function BuyerFavoritesPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => removeFromFavorites(selectedItems)}
+                  onClick={() => handleRemoveFromFavorites(selectedItems)}
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Remove
@@ -378,7 +313,15 @@ export default function BuyerFavoritesPage() {
       </Card>
 
       {/* Favorites Grid/List */}
-      {filteredFavorites.length > 0 ? (
+      {favoritesLoading ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold mb-2">Loading your favorites...</h3>
+            <p className="text-muted-foreground">Please wait while we fetch your saved items.</p>
+          </CardContent>
+        </Card>
+      ) : filteredFavorites.length > 0 ? (
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-0'}>
           {filteredFavorites.map(item => (
             <FavoriteCard key={item.id} item={item} />
@@ -395,7 +338,9 @@ export default function BuyerFavoritesPage() {
                 : 'Start browsing items and add them to your favorites'
               }
             </p>
-            <Button>Browse Items</Button>
+            <Button asChild>
+              <Link href="/games">Browse Items</Link>
+            </Button>
           </CardContent>
         </Card>
       )}

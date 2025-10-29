@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StartConversationButton } from '@/components/chat/StartConversationButton';
 import { listingsAPI } from '@/lib/api';
+import { useSession } from 'next-auth/react';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface Listing {
   id: string;
@@ -65,15 +67,16 @@ interface Listing {
 export default function ListingDetailPage() {
   const params = useParams();
   const listingId = params.id as string;
+  const { data: session } = useSession();
+  const { favorites, addToFavorites, removeFromFavorites, loading: favoritesLoading } = useFavorites();
   
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isFavorited, setIsFavorited] = useState(false);
 
-  // Mock current user ID - in real app, get from auth context
-  const currentUserId = 'buyer-123';
+  // Check if current listing is favorited
+  const isFavorited = favorites.some(fav => fav.listing.id === listingId);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -160,9 +163,22 @@ export default function ListingDetailPage() {
     }
   }, [listingId]);
 
-  const handleFavoriteToggle = () => {
-    setIsFavorited(!isFavorited);
-    // In real app, call API to update favorites
+  const handleFavoriteToggle = async () => {
+    if (!session) {
+      alert('Please sign in to add favorites');
+      return;
+    }
+
+    try {
+      if (isFavorited) {
+        await removeFromFavorites(listingId);
+      } else {
+        await addToFavorites(listingId);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite. Please try again.');
+    }
   };
 
   const handleShare = () => {

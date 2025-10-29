@@ -18,7 +18,7 @@ export default async function GamesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Browse Game Listings</h1>
+          <h1 className="text-3xl font-bold mb-2">Browse Listings</h1>
           <p className="text-muted-foreground">
             Discover and purchase gaming items, accounts, and services from verified sellers
           </p>
@@ -34,7 +34,7 @@ export default async function GamesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Browse Game Listings</h1>
+          <h1 className="text-3xl font-bold mb-2">Browse Listings</h1>
           <p className="text-muted-foreground">
             Discover and purchase gaming items, accounts, and services from verified sellers
           </p>
