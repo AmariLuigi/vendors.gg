@@ -8,7 +8,7 @@ import { eq, and, or } from 'drizzle-orm';
 // GET /api/conversations/[id] - Get a specific conversation with messages
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get the authenticated user session
@@ -21,7 +21,8 @@ export async function GET(
       );
     }
 
-    const conversationId = params.id;
+    const { id } = await params;
+    const conversationId = id;
     const userId = session.user.id; // Use authenticated user's ID
 
     // Fetch conversation with participant details
@@ -163,7 +164,7 @@ export async function GET(
 // PUT /api/conversations/[id] - Update conversation status
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get the authenticated user session
@@ -176,7 +177,8 @@ export async function PUT(
       );
     }
 
-    const conversationId = params.id;
+    const { id } = await params;
+    const conversationId = id;
     const body = await request.json();
     const { status } = body;
     const userId = session.user.id; // Use authenticated user's ID
@@ -229,7 +231,7 @@ export async function PUT(
 // DELETE /api/conversations/[id] - Archive/delete conversation
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -241,7 +243,8 @@ export async function DELETE(
       );
     }
 
-    const conversationId = params.id;
+    const { id } = await params;
+    const conversationId = id;
     const userId = session.user.id;
 
     // Verify user is part of the conversation

@@ -37,7 +37,7 @@ const sidebarItems = [
   },
   {
     title: 'Messages',
-    href: '/dashboard/buyer/messages',
+    href: '/chat',
     icon: MessageCircle,
   },
   {

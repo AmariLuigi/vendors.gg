@@ -96,7 +96,7 @@ export const authOptions: NextAuthOptions = {
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
         session.user.accountType = token.accountType as string;
-        session.user.isVerified = token.isVerified as boolean;
+        session.user.isVerified = token.isVerified as boolean | null;
         session.user.avatar = token.avatar as string;
       }
       return session;
@@ -104,7 +104,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
-    signUp: '/register',
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

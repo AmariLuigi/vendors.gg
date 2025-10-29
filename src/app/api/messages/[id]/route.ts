@@ -8,7 +8,7 @@ import { eq, and, or } from 'drizzle-orm';
 // PUT /api/messages/[id] - Update a message (edit content)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,7 +20,8 @@ export async function PUT(
       );
     }
 
-    const messageId = params.id;
+    const { id } = await params;
+    const messageId = id;
     const body = await request.json();
     const { content } = body;
     const userId = session.user.id;
@@ -62,7 +63,7 @@ export async function PUT(
     }
 
     // Check if message is too old to edit (e.g., 15 minutes)
-    const messageAge = Date.now() - new Date(message[0].createdAt).getTime();
+    const messageAge = Date.now() - new Date(message[0].createdAt || new Date()).getTime();
     const maxEditTime = 15 * 60 * 1000; // 15 minutes in milliseconds
 
     if (messageAge > maxEditTime) {
@@ -123,7 +124,7 @@ export async function PUT(
 // DELETE /api/messages/[id] - Delete a message
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -135,7 +136,8 @@ export async function DELETE(
       );
     }
 
-    const messageId = params.id;
+    const { id } = await params;
+    const messageId = id;
     const userId = session.user.id;
 
     // Fetch the message and verify ownership
@@ -166,7 +168,7 @@ export async function DELETE(
     }
 
     // Check if message is too old to delete (e.g., 1 hour)
-    const messageAge = Date.now() - new Date(message[0].createdAt).getTime();
+    const messageAge = Date.now() - new Date(message[0].createdAt || new Date()).getTime();
     const maxDeleteTime = 60 * 60 * 1000; // 1 hour in milliseconds
 
     if (messageAge > maxDeleteTime) {
@@ -202,7 +204,7 @@ export async function DELETE(
 // PATCH /api/messages/[id] - Mark message as read
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -214,7 +216,8 @@ export async function PATCH(
       );
     }
 
-    const messageId = params.id;
+    const { id } = await params;
+    const messageId = id;
     const userId = session.user.id;
 
     // Fetch the message and conversation to verify access

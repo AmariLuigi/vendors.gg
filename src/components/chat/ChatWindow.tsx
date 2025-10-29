@@ -273,47 +273,51 @@ export function ChatWindow({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {/* Avatar */}
-            {otherParticipant.avatar ? (
-              <img
-                src={otherParticipant.avatar}
-                alt={`${otherParticipant.firstName} ${otherParticipant.lastName}`}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-700">
-                  {otherParticipant.firstName[0]}{otherParticipant.lastName[0]}
-                </span>
-              </div>
-            )}
+            <div className="flex-shrink-0">
+              {otherParticipant.avatar ? (
+                <img
+                  src={otherParticipant.avatar}
+                  alt={`${otherParticipant.firstName} ${otherParticipant.lastName}`}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {otherParticipant.firstName[0]}{otherParticipant.lastName[0]}
+                  </span>
+                </div>
+              )}
+            </div>
 
+            {/* Info */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-foreground">
                 {otherParticipant.firstName} {otherParticipant.lastName}
               </h2>
-              {conversation.listing && (
-                <p className="text-sm text-blue-600">
+              {conversation?.listing && (
+                <p className="text-sm text-primary">
                   {conversation.listing.title} - ${conversation.listing.price}
                 </p>
               )}
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex items-center space-x-2">
-            <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
               <Phone className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
               <Video className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
               <Info className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
               <MoreVertical className="w-5 h-5" />
             </button>
           </div>
@@ -326,7 +330,7 @@ export function ChatWindow({
           <div key={date}>
             {/* Date separator */}
             <div className="flex items-center justify-center mb-4">
-              <div className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">
+              <div className="bg-muted text-muted-foreground text-sm px-3 py-1 rounded-full">
                 {formatMessageDate(date)}
               </div>
             </div>
@@ -352,8 +356,8 @@ export function ChatWindow({
                             className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-medium text-gray-700">
+                          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-muted-foreground">
                               {message.sender.firstName[0]}{message.sender.lastName[0]}
                             </span>
                           </div>
@@ -365,13 +369,13 @@ export function ChatWindow({
                     <div
                       className={`px-4 py-2 rounded-2xl ${
                         isOwnMessage
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground'
                       }`}
                     >
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       <div className={`text-xs mt-1 ${
-                        isOwnMessage ? 'text-blue-100' : 'text-gray-500'
+                        isOwnMessage ? 'text-primary-foreground/70' : 'text-muted-foreground'
                       }`}>
                         {formatMessageTime(message.createdAt)}
                         {message.editedAt && ' (edited)'}
@@ -387,7 +391,7 @@ export function ChatWindow({
       </div>
 
       {/* Message Input */}
-      <div className="bg-white border-t border-gray-200 p-4">
+      <div className="bg-card border-t border-border p-4">
         <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
           <div className="flex-1">
             <div className="relative">
@@ -398,19 +402,19 @@ export function ChatWindow({
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
                 rows={1}
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 pr-12 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent resize-none bg-background text-foreground"
                 style={{ minHeight: '48px', maxHeight: '120px' }}
               />
               <div className="absolute right-3 bottom-3 flex items-center space-x-2">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <Smile className="w-5 h-5" />
                 </button>
@@ -420,7 +424,7 @@ export function ChatWindow({
           <button
             type="submit"
             disabled={!newMessage.trim() || sending}
-            className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="bg-primary text-primary-foreground p-3 rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>

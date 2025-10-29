@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { listings, accounts, games, categories, subcategories, servers, leagues } from '@/lib/db/schema';
-import { eq, and, like, gte, lte, desc, asc } from 'drizzle-orm';
+import { eq, and, like, gte, lte, desc, asc, or, count } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build the query with joins
-    let query = db
+    const baseQuery = db
       .select({
         id: listings.id,
         title: listings.title,
@@ -94,15 +94,14 @@ export async function GET(request: NextRequest) {
       .leftJoin(servers, eq(listings.serverId, servers.id))
       .leftJoin(leagues, eq(listings.leagueId, leagues.id));
 
-    // Apply filters
+    // Build all conditions
+    const allConditions = [...conditions];
     if (game) {
-      query = query.where(and(...conditions, eq(games.slug, game)));
+      allConditions.push(eq(games.slug, game));
     } else if (category) {
-      query = query.where(and(...conditions, eq(categories.slug, category)));
+      allConditions.push(eq(categories.slug, category));
     } else if (subcategory) {
-      query = query.where(and(...conditions, eq(subcategories.slug, subcategory)));
-    } else {
-      query = query.where(and(...conditions));
+      allConditions.push(eq(subcategories.slug, subcategory));
     }
 
     // Apply sorting
@@ -111,35 +110,29 @@ export async function GET(request: NextRequest) {
                        sortBy === 'views' ? listings.views :
                        listings.createdAt;
     
-    query = query.orderBy(sortOrder === 'asc' ? asc(orderColumn) : desc(orderColumn));
-
     // Apply pagination
     const offset = (page - 1) * limit;
-    query = query.limit(limit).offset(offset);
+
+    // Execute the main query
+    const query = baseQuery
+      .where(allConditions.length > 0 ? and(...allConditions) : undefined)
+      .orderBy(sortOrder === 'asc' ? asc(orderColumn) : desc(orderColumn))
+      .limit(limit)
+      .offset(offset);
 
     const results = await query;
 
     // Get total count for pagination
-    const totalQuery = db
-      .select({ count: listings.id })
+    const totalCountQuery = db
+      .select({ count: count() })
       .from(listings)
       .leftJoin(games, eq(listings.gameId, games.id))
       .leftJoin(categories, eq(listings.categoryId, categories.id))
-      .leftJoin(subcategories, eq(listings.subcategoryId, subcategories.id));
-
-    let totalCountQuery = totalQuery;
-    if (game) {
-      totalCountQuery = totalCountQuery.where(and(...conditions, eq(games.slug, game)));
-    } else if (category) {
-      totalCountQuery = totalCountQuery.where(and(...conditions, eq(categories.slug, category)));
-    } else if (subcategory) {
-      totalCountQuery = totalCountQuery.where(and(...conditions, eq(subcategories.slug, subcategory)));
-    } else {
-      totalCountQuery = totalCountQuery.where(and(...conditions));
-    }
+      .leftJoin(subcategories, eq(listings.subcategoryId, subcategories.id))
+      .where(allConditions.length > 0 ? and(...allConditions) : undefined);
 
     const totalCountResult = await totalCountQuery;
-    const totalCount = totalCountResult.length;
+    const totalCount = totalCountResult[0].count;
     const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json({

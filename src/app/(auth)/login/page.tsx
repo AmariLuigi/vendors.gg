@@ -27,10 +27,32 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log('Login attempt:', formData);
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else if (result?.ok) {
+        // Redirect to dashboard or intended page
+        window.location.href = '/dashboard';
+      }
+    } catch (error) {
+      setError('An error occurred during sign in');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -100,6 +122,12 @@ export default function LoginPage() {
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -113,6 +141,7 @@ export default function LoginPage() {
                     onChange={handleInputChange}
                     className="pl-10"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -130,11 +159,13 @@ export default function LoginPage() {
                     onChange={handleInputChange}
                     className="pl-10 pr-10"
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    disabled={isLoading}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -154,6 +185,7 @@ export default function LoginPage() {
                     checked={formData.rememberMe}
                     onChange={handleInputChange}
                     className="rounded border-gray-300"
+                    disabled={isLoading}
                   />
                   <Label htmlFor="rememberMe" className="text-sm">
                     Remember me
@@ -167,8 +199,8 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Sign In
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
 

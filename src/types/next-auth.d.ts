@@ -7,8 +7,8 @@ declare module 'next-auth' {
     firstName: string;
     lastName: string;
     accountType: string;
-    isVerified: boolean;
-    avatar?: string;
+    isVerified: boolean | null;
+    avatar: string | null | undefined;
   }
 
   interface Session {
@@ -18,8 +18,8 @@ declare module 'next-auth' {
       firstName: string;
       lastName: string;
       accountType: string;
-      isVerified: boolean;
-      avatar?: string;
+      isVerified: boolean | null;
+      avatar: string | null | undefined;
     };
   }
 }
@@ -27,10 +27,11 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
+    email: string;
     firstName: string;
     lastName: string;
     accountType: string;
-    isVerified: boolean;
-    avatar?: string;
+    isVerified: boolean | null;
+    avatar: string | null | undefined;
   }
 }

@@ -5,10 +5,10 @@ import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const result = await db
       .select({
@@ -91,7 +91,7 @@ export async function GET(
     // Increment view count
     await db
       .update(listings)
-      .set({ views: result[0].views + 1 })
+      .set({ views: (result[0].views || 0) + 1 })
       .where(eq(listings.id, id));
 
     return NextResponse.json({
@@ -110,10 +110,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // TODO: Add authentication middleware to verify seller ownership
@@ -189,10 +189,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // TODO: Add authentication middleware to verify seller ownership
     const deletedListing = await db

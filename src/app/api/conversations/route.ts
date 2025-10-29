@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { conversations, messages, accounts } from '@/lib/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { conversations, messages, accounts, listings } from '@/lib/db/schema';
+import { eq, and, desc, or } from 'drizzle-orm';
 
 // GET /api/conversations - Get all conversations for a user
 export async function GET(request: NextRequest) {
