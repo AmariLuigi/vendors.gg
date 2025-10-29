@@ -19,6 +19,7 @@ import {
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useConversations } from '@/hooks/useConversations';
 
 // Mock data for buyer dashboard
 const mockOrders = [
@@ -76,6 +77,7 @@ const mockFavorites = [
 export default function BuyerDashboard() {
   const { data: session } = useSession();
   const { favorites, loading: favoritesLoading } = useFavorites();
+  const { activeChatsCount, unreadMessagesCount, loading: conversationsLoading } = useConversations();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -170,10 +172,12 @@ export default function BuyerDashboard() {
               <span className="text-sm font-medium text-muted-foreground">Active Chats</span>
             </div>
             <div className="mt-2">
-              <p className="text-2xl font-bold">5</p>
+              <p className="text-2xl font-bold">
+                {conversationsLoading ? '...' : activeChatsCount}
+              </p>
               <p className="text-xs text-purple-600 flex items-center mt-1">
                 <MessageCircle className="h-3 w-3 mr-1" />
-                2 unread messages
+                {conversationsLoading ? 'Loading...' : `${unreadMessagesCount} unread messages`}
               </p>
             </div>
           </CardContent>
@@ -270,7 +274,7 @@ export default function BuyerDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{favorite.listing.title}</p>
                       <p className="text-sm text-muted-foreground">{favorite.listing.game?.name}</p>
-                      <p className="text-sm text-muted-foreground">by {favorite.listing.account?.username || 'Unknown'}</p>
+                      <p className="text-sm text-muted-foreground">by {favorite.listing.account?.username ?? 'Unknown'}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold">${favorite.listing.price}</p>
