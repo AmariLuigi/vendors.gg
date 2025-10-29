@@ -8,6 +8,27 @@
       "when": 1761695782428,
       "tag": "0000_thin_jane_foster",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1761720206587,
+      "tag": "0001_unusual_rogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761724554204,
+      "tag": "0002_luxuriant_obadiah_stane",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1761725667248,
+      "tag": "0003_robust_black_widow",
+      "breakpoints": true
     }
   ]
 }

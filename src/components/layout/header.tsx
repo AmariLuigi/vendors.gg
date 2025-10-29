@@ -3,11 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, User, Search, Shield } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ShoppingCart, User, Search, Shield, LogOut, Settings, MessageSquare } from 'lucide-react';
+import { ChatNotifications } from '@/components/chat/ChatNotifications';
 
 const Header: React.FC = () => {
+  const { data: session, status } = useSession();
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -63,6 +72,9 @@ const Header: React.FC = () => {
 
           {/* User Actions */}
           <div className="flex items-center space-x-3">
+            {/* Chat Notifications */}
+            {session && <ChatNotifications userId={session.user.id} />}
+
             {/* Cart */}
             <Button variant="ghost" size="sm" className="relative">
               <ShoppingCart className="w-5 h-5" />
@@ -74,24 +86,56 @@ const Header: React.FC = () => {
               </Badge>
             </Button>
 
-            {/* Auth Buttons */}
-            <div className="hidden sm:flex items-center space-x-2">
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="sm" className="bg-primary hover:bg-primary/90">
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
-
-            {/* User Menu (when logged in) */}
-            {/* <Button variant="ghost" size="sm" className="hidden">
-              <User className="w-5 h-5" />
-            </Button> */}
+            {/* Authentication */}
+            {status === 'loading' ? (
+              <div className="w-20 h-8 bg-muted animate-pulse rounded" />
+            ) : session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <User className="w-5 h-5" />
+                    <span className="hidden sm:inline">{session.user.firstName}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{session.user.firstName} {session.user.lastName}</p>
+                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/chat" className="flex items-center">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Messages
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="hidden sm:flex items-center space-x-2">
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <Button variant="ghost" size="sm" className="md:hidden">

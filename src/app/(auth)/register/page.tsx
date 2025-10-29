@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import VendorLogo from '@/components/ui/vendor-logo';
-import { Eye, EyeOff, Mail, Lock, User, Github, Chrome, Shield, ShoppingCart, Store, Users } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Github, Chrome, Shield, ShoppingCart, Store, Users, MessageSquare } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 
 type AccountType = 'buyer' | 'seller' | 'both';
 
@@ -124,13 +125,32 @@ export default function RegisterPage() {
 
             {/* Social Registration */}
             <div className="space-y-3">
-              <Button variant="outline" className="w-full" type="button">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={() => signIn('google')}
+              >
                 <Chrome className="w-4 h-4 mr-2" />
                 Continue with Google
               </Button>
-              <Button variant="outline" className="w-full" type="button">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={() => signIn('github')}
+              >
                 <Github className="w-4 h-4 mr-2" />
                 Continue with GitHub
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={() => signIn('discord')}
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Continue with Discord
               </Button>
             </div>
 

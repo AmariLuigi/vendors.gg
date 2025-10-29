@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { X, Plus } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
-import { pathOfExileAPI } from "@/lib/api"
 import { PoELeague, PoE2League } from "@/lib/types"
 import { useGames, useGameCategories, useGameServers, useGameLeagues } from "@/hooks/useGames"
 
@@ -275,7 +274,31 @@ export default function CreateListingPage() {
         setPoeLeaguesLoading(true)
         setPoeLeaguesError(null)
         try {
-          const leagues = await pathOfExileAPI.getLeagues()
+          // Mock PoE leagues data
+          const leagues = [
+            {
+              id: "Standard",
+              name: "Standard",
+              realm: "pc",
+              url: "https://www.pathofexile.com/ladders/league/Standard",
+              startAt: "2013-01-23T21:00:00Z",
+              endAt: null,
+              description: "The default game mode.",
+              category: { id: "Standard" },
+              rules: []
+            },
+            {
+              id: "Hardcore",
+              name: "Hardcore",
+              realm: "pc",
+              url: "https://www.pathofexile.com/ladders/league/Hardcore",
+              startAt: "2013-01-23T21:00:00Z",
+              endAt: null,
+              description: "A character killed in the Hardcore league is moved to the Standard league.",
+              category: { id: "Standard" },
+              rules: []
+            }
+          ];
           setPoeLeagues(leagues)
         } catch (error) {
           setPoeLeaguesError('Failed to load Path of Exile leagues')
@@ -291,7 +314,19 @@ export default function CreateListingPage() {
         setPoeLeaguesLoading(true)
         setPoeLeaguesError(null)
         try {
-          const leagues = await pathOfExileAPI.getPoE2Leagues()
+          // Mock PoE2 leagues data
+          const leagues = [
+            {
+              value: "poe2-standard",
+              divinePrice: 150,
+              chaosDivinePrice: 0.0067
+            },
+            {
+              value: "poe2-hardcore",
+              divinePrice: 200,
+              chaosDivinePrice: 0.005
+            }
+          ];
           setPoe2Leagues(leagues)
         } catch (error) {
           setPoeLeaguesError('Failed to load Path of Exile 2 leagues')

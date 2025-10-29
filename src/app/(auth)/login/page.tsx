@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import VendorLogo from '@/components/ui/vendor-logo';
-import { Eye, EyeOff, Mail, Lock, Github, Chrome, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Github, Chrome, Shield, MessageSquare } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -56,13 +57,32 @@ export default function LoginPage() {
           <CardContent className="space-y-6">
             {/* Social Login Buttons */}
             <div className="space-y-3">
-              <Button variant="outline" className="w-full" type="button">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={() => signIn('google')}
+              >
                 <Chrome className="w-4 h-4 mr-2" />
                 Continue with Google
               </Button>
-              <Button variant="outline" className="w-full" type="button">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={() => signIn('github')}
+              >
                 <Github className="w-4 h-4 mr-2" />
                 Continue with GitHub
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={() => signIn('discord')}
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Continue with Discord
               </Button>
             </div>
 
