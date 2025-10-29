@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ApiResponse, PaginatedResponse } from './types';
+import { ApiResponse, PaginatedResponse, PoELeague, PoE2League } from './types';
 
 // Create axios instance with base configuration
 const api = axios.create({

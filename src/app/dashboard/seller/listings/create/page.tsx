@@ -70,14 +70,14 @@ const deliveryMethods = [
 // Form validation schema with comprehensive validation
 const listingSchema = z.object({
   // Step 1: Game & Category
-  game: z.number({
-    required_error: "Please select a game",
+  game: z.string({
+    message: "Please select a game",
   }),
   server: z.string().optional(),
   league: z.string().optional(),
   poeLeague: z.string().optional(), // For Path of Exile dynamic leagues
   category: z.enum(["Currency", "Items", "Accounts", "Services"], {
-    errorMap: () => ({ message: "Please select a valid category" })
+    message: "Please select a valid category"
   }),
   subcategory: z.string().min(1, "Please select a subcategory"),
   
@@ -95,10 +95,10 @@ const listingSchema = z.object({
     .max(999999, "Quantity cannot exceed 999,999")
     .int("Quantity must be a whole number"),
   rarity: z.enum(["Common", "Rare", "Epic", "Legendary"], {
-    errorMap: () => ({ message: "Please select a valid rarity" })
+    message: "Please select a valid rarity"
   }).optional(),
   condition: z.enum(["Mint", "Good", "Fair"], {
-    errorMap: () => ({ message: "Please select a valid condition" })
+    message: "Please select a valid condition"
   }).optional(),
   tags: z.array(z.string().min(1, "Tag cannot be empty").max(20, "Tag too long"))
     .max(10, "Maximum 10 tags allowed")
@@ -132,7 +132,7 @@ const listingSchema = z.object({
   
   // Step 5: Advanced Options
   deliveryTime: z.enum(["Instant", "1h", "24h", "3d"], {
-    errorMap: () => ({ message: "Please select a delivery time" })
+    message: "Please select a delivery time"
   }),
   deliveryMethod: z.string()
     .min(10, "Please provide more details about delivery method")
@@ -195,24 +195,31 @@ const popularTags = [
 
 type ListingFormData = z.infer<typeof listingSchema>
 
-const steps = [
-  { id: "game", title: "Game & Category", icon: Gamepad2, description: "Select your game and item category" },
-  { id: "details", title: "Item Details", icon: Package, description: "Describe your item in detail" },
-  { id: "pricing", title: "Pricing", icon: DollarSign, description: "Set your price and terms" },
-  { id: "media", title: "Media Upload", icon: Upload, description: "Add images and proof videos" },
-  { id: "advanced", title: "Advanced Options", icon: Settings, description: "Configure delivery and restrictions" },
-]
-
 export default function CreateListingPage() {
+  const steps = [
+    { id: "game", title: "Game & Category", icon: Gamepad2, description: "Select your game and item category" },
+    { id: "details", title: "Item Details", icon: Package, description: "Describe your item in detail" },
+    { id: "pricing", title: "Pricing", icon: DollarSign, description: "Set your price and terms" },
+    { id: "media", title: "Media Upload", icon: Upload, description: "Add images and proof videos" },
+    { id: "advanced", title: "Advanced Options", icon: Settings, description: "Configure delivery and restrictions" },
+  ]
+
   const [currentStep, setCurrentStep] = useState(0)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [customTag, setCustomTag] = useState("")
   
-  // Database-driven data hooks
-  const form = useForm<ListingFormData>({
+  const form = useForm({
     resolver: zodResolver(listingSchema),
     defaultValues: {
+      game: "",
+      category: "Currency" as const,
+      subcategory: "",
+      title: "",
+      description: "",
+      quantity: 1,
+      price: 0,
+      currency: "USD",
       negotiable: false,
       bulkDiscount: false,
       auctionMode: false,
@@ -221,7 +228,9 @@ export default function CreateListingPage() {
       tags: [],
       regions: [],
       minBuyerRating: 0,
-      quantity: 1,
+      images: [],
+      deliveryTime: "Instant" as const,
+      deliveryMethod: "",
     },
   })
 
@@ -404,7 +413,7 @@ export default function CreateListingPage() {
   const onSubmit = async (data: ListingFormData) => {
     try {
       // Get the selected game data
-      const selectedGameData = games.find(g => g.id === parseInt(data.game));
+      const selectedGameData = games.find(g => g.id === data.game);
       
       // Validate Path of Exile league selection
       if (selectedGameData?.slug === 'poe' || selectedGameData?.slug === 'poe2') {
@@ -599,7 +608,7 @@ export default function CreateListingPage() {
                   />
 
                   {/* Server Selection (Conditional) */}
-                  {selectedGame && games.find(g => g.id === parseInt(selectedGame))?.hasServers && (
+                  {selectedGame && games.find(g => g.id === selectedGame)?.hasServers && (
                     <FormField
                       control={form.control}
                       name="server"
@@ -636,24 +645,24 @@ export default function CreateListingPage() {
                   )}
 
                   {/* League Selection (Conditional) */}
-                  {selectedGame && games.find(g => g.id === parseInt(selectedGame))?.hasLeagues && (
+                  {selectedGame && games.find(g => g.id === selectedGame)?.hasLeagues && (
                     <FormField
                       control={form.control}
                       name={(() => {
-                        const game = games.find(g => g.id === parseInt(selectedGame));
+                        const game = games.find(g => g.id === selectedGame);
                         return (game?.slug === 'poe' || game?.slug === 'poe2') ? 'poeLeague' : 'league';
                       })()}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>League/Mode</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value} disabled={(() => {
-                            const game = games.find(g => g.id === parseInt(selectedGame));
+                            const game = games.find(g => g.id === selectedGame);
                             return (game?.slug === 'poe' || game?.slug === 'poe2') && poeLeaguesLoading;
                           })()}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder={(() => {
-                                  const game = games.find(g => g.id === parseInt(selectedGame));
+                                  const game = games.find(g => g.id === selectedGame);
                                   return (game?.slug === 'poe' || game?.slug === 'poe2') && poeLeaguesLoading 
                                     ? "Loading leagues..." 
                                     : "Select a league or mode";
@@ -662,7 +671,7 @@ export default function CreateListingPage() {
                             </FormControl>
                             <SelectContent>
                               {(() => {
-                                const game = games.find(g => g.id === parseInt(selectedGame));
+                                const game = games.find(g => g.id === selectedGame);
                                 if (game?.slug === 'poe') {
                                   // Dynamic Path of Exile leagues
                                   return poeLeagues.length > 0 ? (
@@ -746,14 +755,14 @@ export default function CreateListingPage() {
                           </Select>
                           <FormDescription>
                             {(() => {
-                              const selectedGameData = games.find(g => g.id === parseInt(selectedGame));
+                              const selectedGameData = games.find(g => g.id === selectedGame);
                               return (selectedGameData?.slug === 'poe' || selectedGameData?.slug === 'poe2')
                                 ? `Select an active ${selectedGameData?.slug === 'poe2' ? 'Path of Exile 2' : 'Path of Exile'} league` 
                                 : "Select the league or game mode";
                             })()}
                           </FormDescription>
                           {(() => {
-                            const selectedGameData = games.find(g => g.id === parseInt(selectedGame));
+                            const selectedGameData = games.find(g => g.id === selectedGame);
                             return (selectedGameData?.slug === 'poe' || selectedGameData?.slug === 'poe2') && poeLeaguesError && (
                               <p className="text-sm text-destructive mt-1">{poeLeaguesError}</p>
                             );

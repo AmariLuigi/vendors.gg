@@ -44,10 +44,10 @@ export async function GET() {
             name: game.name,
             slug: game.slug,
             icon: game.icon,
-            has_servers: game.has_servers,
-            has_leagues: game.has_leagues,
-            created_at: game.created_at,
-            updated_at: game.updated_at,
+            has_servers: game.hasServers,
+            has_leagues: game.hasLeagues,
+            created_at: game.createdAt,
+            updated_at: game.updatedAt,
             categories: [],
           };
         }
@@ -97,10 +97,10 @@ export async function GET() {
           name: game.name,
           slug: game.slug,
           icon: game.icon,
-          has_servers: game.has_servers,
-          has_leagues: game.has_leagues,
-          created_at: game.created_at,
-          updated_at: game.updated_at,
+          has_servers: game.hasServers,
+          has_leagues: game.hasLeagues,
+          created_at: game.createdAt,
+          updated_at: game.updatedAt,
           categories: categoriesWithSubcategories,
         };
       })

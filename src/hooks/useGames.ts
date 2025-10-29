@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 export interface GameCategory {
   id: string;
   name: string;
+  slug: string;
   description: string | null;
   subcategories: GameSubcategory[];
 }
@@ -10,6 +11,7 @@ export interface GameCategory {
 export interface GameSubcategory {
   id: string;
   name: string;
+  slug: string;
   description: string | null;
 }
 
