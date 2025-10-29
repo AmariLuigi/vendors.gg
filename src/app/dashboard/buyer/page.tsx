@@ -17,6 +17,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useConversations } from '@/hooks/useConversations';
@@ -300,18 +301,24 @@ export default function BuyerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Button variant="outline" className="h-20 flex-col space-y-2">
-              <Eye className="h-6 w-6" />
-              <span>Browse Items</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2">
-              <Heart className="h-6 w-6" />
-              <span>My Favorites</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2">
-              <MessageCircle className="h-6 w-6" />
-              <span>Messages</span>
-            </Button>
+            <Link href="/games">
+              <Button variant="outline" className="h-20 flex-col space-y-2 w-full">
+                <Eye className="h-6 w-6" />
+                <span>Browse Items</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/buyer/favorites">
+              <Button variant="outline" className="h-20 flex-col space-y-2 w-full">
+                <Heart className="h-6 w-6" />
+                <span>My Favorites</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/buyer/messages">
+              <Button variant="outline" className="h-20 flex-col space-y-2 w-full">
+                <MessageCircle className="h-6 w-6" />
+                <span>Messages</span>
+              </Button>
+            </Link>
             <Button variant="outline" className="h-20 flex-col space-y-2">
               <Star className="h-6 w-6" />
               <span>Leave Review</span>
