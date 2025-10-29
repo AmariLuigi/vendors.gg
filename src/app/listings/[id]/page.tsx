@@ -81,58 +81,72 @@ export default function ListingDetailPage() {
         setLoading(true);
         setError(null);
         
-        // Mock listing data - in real app, fetch from API
-        const mockListing: Listing = {
-          id: listingId,
-          title: 'CS2 AK-47 Redline (Field-Tested)',
-          description: 'Beautiful AK-47 Redline skin in Field-Tested condition. This is a popular and sought-after skin with excellent float value. Perfect for competitive play or collection. The skin has been well-maintained and comes from a smoke-free gaming environment.',
-          price: 45.99,
-          currency: 'USD',
-          images: [
-            'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=600&fit=crop'
-          ],
-          rarity: 'Classified',
-          condition: 'Field-Tested',
-          quantity: 1,
-          deliveryTime: '5-15 minutes',
-          regions: ['North America', 'Europe'],
-          tags: ['Popular', 'Fast Delivery', 'Trusted Seller'],
-          views: 234,
-          favorites: 18,
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-15T10:30:00Z',
+        // Fetch actual listing data from API
+        const response = await fetch(`/api/listings/${listingId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch listing');
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to fetch listing');
+        }
+        
+        // Transform the API response to match our interface
+        const apiListing = result.data;
+        const transformedListing: Listing = {
+          id: apiListing.id,
+          title: apiListing.title,
+          description: apiListing.description,
+          price: parseFloat(apiListing.price),
+          currency: apiListing.currency,
+          images: apiListing.images || ['https://via.placeholder.com/800x600?text=No+Image'],
+          rarity: apiListing.rarity,
+          condition: apiListing.condition,
+          quantity: apiListing.quantity,
+          deliveryTime: apiListing.deliveryTime,
+          regions: apiListing.regions || [],
+          tags: [], // Tags not in current schema, can be added later
+          views: apiListing.views || 0,
+          favorites: apiListing.favorites || 0,
+          createdAt: apiListing.createdAt,
+          updatedAt: apiListing.updatedAt,
           seller: {
-            id: 'seller-456',
-            firstName: 'John',
-            lastName: 'Smith',
-            rating: 4.8,
-            totalReviews: 127,
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-            joinedAt: '2023-06-15T00:00:00Z'
+            id: apiListing.seller.id,
+            firstName: apiListing.seller.firstName,
+            lastName: apiListing.seller.lastName,
+            rating: apiListing.seller.rating || 0,
+            totalReviews: apiListing.seller.totalReviews || 0,
+            avatar: apiListing.seller.avatar,
+            joinedAt: apiListing.seller.createdAt || new Date().toISOString()
           },
           game: {
-            id: 'cs2',
-            name: 'Counter-Strike 2',
-            icon: '/logo.png'
+            id: apiListing.game.id,
+            name: apiListing.game.name,
+            icon: apiListing.game.icon
           },
           category: {
-            id: 'skins',
-            name: 'Weapon Skins'
+            id: apiListing.category.id,
+            name: apiListing.category.name
           },
           subcategory: {
-            id: 'rifle-skins',
-            name: 'Rifle Skins'
+            id: apiListing.subcategory?.id || '',
+            name: apiListing.subcategory?.name || ''
           },
-          server: {
-            id: 'global',
-            name: 'Global',
-            region: 'Worldwide'
-          }
+          server: apiListing.server ? {
+            id: apiListing.server.id,
+            name: apiListing.server.name,
+            region: apiListing.server.region
+          } : undefined,
+          league: apiListing.league ? {
+            id: apiListing.league.id,
+            name: apiListing.league.name
+          } : undefined
         };
         
-        setListing(mockListing);
+        setListing(transformedListing);
       } catch (err) {
         setError('Failed to load listing details');
         console.error('Error fetching listing:', err);

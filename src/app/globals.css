@@ -1,6 +1,23 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Immediate background fix - highest priority */
+:root {
+  color-scheme: dark !important;
+  background: oklch(0.145 0 0) !important;
+  background-color: oklch(0.145 0 0) !important;
+}
+
+html {
+  background: oklch(0.145 0 0) !important;
+  background-color: oklch(0.145 0 0) !important;
+}
+
+body {
+  background: oklch(0.145 0 0) !important;
+  background-color: oklch(0.145 0 0) !important;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -83,7 +100,28 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html {
+    @apply bg-background;
+    background-color: oklch(0.145 0 0) !important;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    background-color: oklch(0.145 0 0) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Prevent white flash during page transitions - more aggressive */
+  html, body, #__next, #__next > div, [data-nextjs-scroll-focus-boundary] {
+    background-color: oklch(0.145 0 0) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Target Next.js specific elements */
+  div[id^="__next"] {
+    background-color: oklch(0.145 0 0) !important;
   }
 }

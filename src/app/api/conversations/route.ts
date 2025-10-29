@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id; // Use authenticated user's ID
 
-    const userConversations = await db
+    const rawConversations = await db
       .select({
         id: conversations.id,
         buyerId: conversations.buyerId,
@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
         lastMessageAt: conversations.lastMessageAt,
         createdAt: conversations.createdAt,
         updatedAt: conversations.updatedAt,
-        // Other participant info
-        otherParticipant: {
+        // Buyer info
+        buyerInfo: {
           id: accounts.id,
           firstName: accounts.firstName,
           lastName: accounts.lastName,
@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
       .leftJoin(
         accounts,
         or(
-          and(eq(conversations.buyerId, userId), eq(accounts.id, conversations.sellerId)),
-          and(eq(conversations.sellerId, userId), eq(accounts.id, conversations.buyerId))
+          eq(accounts.id, conversations.buyerId),
+          eq(accounts.id, conversations.sellerId)
         )
       )
       .leftJoin(listings, eq(conversations.listingId, listings.id))
@@ -72,7 +72,53 @@ export async function GET(request: NextRequest) {
       )
       .orderBy(desc(conversations.lastMessageAt));
 
-    return NextResponse.json(userConversations);
+    // Transform the data to match frontend expectations
+    const formattedConversations = await Promise.all(
+      rawConversations.map(async (conv) => {
+        // Get buyer and seller info separately
+        const [buyerInfo, sellerInfo] = await Promise.all([
+          db.select().from(accounts).where(eq(accounts.id, conv.buyerId)).limit(1),
+          db.select().from(accounts).where(eq(accounts.id, conv.sellerId)).limit(1)
+        ]);
+
+        return {
+          id: conv.id,
+          buyerId: conv.buyerId,
+          sellerId: conv.sellerId,
+          listingId: conv.listingId,
+          orderId: conv.orderId,
+          status: conv.status,
+          lastMessageAt: conv.lastMessageAt,
+          createdAt: conv.createdAt,
+          buyer: buyerInfo[0] ? {
+            id: buyerInfo[0].id,
+            firstName: buyerInfo[0].firstName,
+            lastName: buyerInfo[0].lastName,
+            avatar: buyerInfo[0].avatar,
+          } : null,
+          seller: sellerInfo[0] ? {
+            id: sellerInfo[0].id,
+            firstName: sellerInfo[0].firstName,
+            lastName: sellerInfo[0].lastName,
+            avatar: sellerInfo[0].avatar,
+          } : null,
+          listing: conv.listing.id ? {
+            id: conv.listing.id,
+            title: conv.listing.title,
+            price: conv.listing.price,
+            images: conv.listing.images,
+          } : null,
+          lastMessage: conv.lastMessage.id ? {
+            content: conv.lastMessage.content,
+            senderId: conv.lastMessage.senderId,
+            createdAt: conv.lastMessage.createdAt,
+          } : null,
+          unreadCount: 0, // TODO: Calculate actual unread count
+        };
+      })
+    );
+
+    return NextResponse.json(formattedConversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);
     return NextResponse.json(

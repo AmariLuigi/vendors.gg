@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { conversationsAPI } from '@/lib/api';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { EmptyChat } from '@/components/chat/EmptyChat';
+import { motion } from 'framer-motion';
 
 interface Conversation {
   id: string;
@@ -42,17 +45,30 @@ interface Conversation {
 }
 
 export default function ChatPage() {
+  const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const conversationParam = searchParams.get('conversation');
+  
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationParam);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Mock user ID - in real app, this would come from auth context
-  const currentUserId = 'user-1';
+  // Get current user ID from session
+  const currentUserId = session?.user?.id;
 
   useEffect(() => {
-    loadConversations();
-  }, []);
+    if (currentUserId) {
+      loadConversations();
+    }
+  }, [currentUserId]);
+
+  // Auto-select conversation from URL parameter
+  useEffect(() => {
+    if (conversationParam && conversations.length > 0) {
+      setSelectedConversation(conversationParam);
+    }
+  }, [conversationParam, conversations]);
 
   const loadConversations = async () => {
     try {
@@ -62,7 +78,8 @@ export default function ChatPage() {
       if (response.error) {
         setError(response.error);
       } else {
-        setConversations(response.conversations || []);
+        // The API returns conversations array directly, not wrapped in an object
+        setConversations(Array.isArray(response) ? response : []);
       }
     } catch (err) {
       setError('Failed to load conversations');
@@ -104,38 +121,122 @@ export default function ChatPage() {
     }));
   };
 
+  // Show loading while session is loading
+  if (!session && loading) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex h-screen bg-background"
+      >
+        <div className="flex items-center justify-center w-full">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+            className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          />
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!session) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex h-screen bg-background"
+      >
+        <div className="flex items-center justify-center w-full">
+          <motion.div 
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+            className="text-center"
+          >
+            <div className="text-muted-foreground mb-4">Please sign in to access your messages</div>
+            <motion.a 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="/login"
+              className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            >
+              Sign In
+            </motion.a>
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex h-screen bg-background"
+      >
         <div className="flex items-center justify-center w-full">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+            className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          />
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-screen bg-gray-50">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex h-screen bg-background"
+      >
         <div className="flex items-center justify-center w-full">
-          <div className="text-center">
-            <div className="text-red-600 mb-2">Error loading conversations</div>
-            <button 
+          <motion.div 
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+            className="text-center"
+          >
+            <div className="text-destructive mb-2">Error loading conversations</div>
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={loadConversations}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             >
               Retry
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex h-screen bg-background"
+    >
       {/* Chat Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <motion.div 
+        initial={{ x: -300, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="w-80 bg-card border-r border-border flex flex-col"
+      >
         <ChatSidebar
           conversations={conversations}
           selectedConversation={selectedConversation}
@@ -143,10 +244,15 @@ export default function ChatPage() {
           currentUserId={currentUserId}
           onRefresh={loadConversations}
         />
-      </div>
+      </motion.div>
 
       {/* Chat Window */}
-      <div className="flex-1 flex flex-col">
+      <motion.div 
+        initial={{ x: 300, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="flex-1 flex flex-col bg-background"
+      >
         {selectedConversation ? (
           <ChatWindow
             conversationId={selectedConversation}
@@ -157,7 +263,7 @@ export default function ChatPage() {
         ) : (
           <EmptyChat />
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

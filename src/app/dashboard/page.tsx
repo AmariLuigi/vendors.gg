@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import PageContent from '@/components/layout/PageContent';
 import { ShoppingCart, Store, Users } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -49,17 +51,50 @@ export default function DashboardPage() {
 
   // Show dashboard selection for users with 'both' account type or no specific type
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome to your Dashboard</h1>
-          <p className="text-muted-foreground">
+    <PageContent className="container mx-auto px-4 py-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="max-w-4xl mx-auto"
+      >
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="text-center mb-8"
+        >
+          <motion.h1 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-3xl font-bold mb-2"
+          >
+            Welcome to your Dashboard
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-muted-foreground"
+          >
             Choose how you'd like to use vendors.gg today
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="grid md:grid-cols-2 gap-6"
+        >
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+          >
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <Link href="/dashboard/buyer">
               <CardHeader className="text-center">
                 <div className="mx-auto mb-4 p-3 bg-primary/10 rounded-full w-fit">
@@ -83,8 +118,15 @@ export default function DashboardPage() {
               </CardContent>
             </Link>
           </Card>
+          </motion.div>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+          >
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <Link href="/dashboard/seller">
               <CardHeader className="text-center">
                 <div className="mx-auto mb-4 p-3 bg-accent/10 rounded-full w-fit">
@@ -108,13 +150,29 @@ export default function DashboardPage() {
               </CardContent>
             </Link>
           </Card>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="text-center mt-8">
-          <p className="text-sm text-muted-foreground mb-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="text-center mt-8"
+        >
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="text-sm text-muted-foreground mb-4"
+          >
             Need help getting started?
-          </p>
-          <div className="flex justify-center gap-4">
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="flex justify-center gap-4"
+          >
             <Button variant="ghost" size="sm">
               <Users className="h-4 w-4 mr-2" />
               Contact Support
@@ -122,9 +180,9 @@ export default function DashboardPage() {
             <Button variant="ghost" size="sm">
               View Documentation
             </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    </PageContent>
   );
 }

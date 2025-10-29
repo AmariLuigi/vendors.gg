@@ -6,9 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import PageContent from '@/components/layout/PageContent';
 import { Heart, Search, Filter, Star, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 interface Listing {
   id: string;
@@ -127,14 +129,26 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
     return `${currency === 'USD' ? '$' : currency} ${numPrice.toFixed(2)}`;
   };
 
-  const formatRating = (rating: number) => {
-    return rating ? rating.toFixed(1) : 'N/A';
+  const formatRating = (rating: number | string | null | undefined) => {
+    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
+    return numRating && !isNaN(numRating) ? numRating.toFixed(1) : 'N/A';
   };
 
   return (
-    <div className="space-y-6">
+    <PageContent>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="space-y-6"
+      >
       {/* Search and Filters */}
-      <div className="bg-card rounded-lg p-6 border">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="bg-card rounded-lg p-6 border"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           <div className="lg:col-span-2">
             <div className="relative">
@@ -212,17 +226,27 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </motion.div>
 
       {/* Results Summary */}
-      <div className="flex items-center justify-between">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="flex items-center justify-between"
+      >
         <p className="text-muted-foreground">
           Showing {filteredListings.length} of {listingsData.length} listings
         </p>
-      </div>
+      </motion.div>
 
       {/* Listings Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
         {filteredListings.map((listing) => (
           <Card key={listing.id} className="group hover:shadow-lg transition-shadow duration-200">
             <CardHeader className="p-0">
@@ -308,11 +332,16 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
             </CardFooter>
           </Card>
         ))}
-      </div>
+      </motion.div>
 
       {/* Empty State */}
       {filteredListings.length === 0 && (
-        <div className="text-center py-12">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+          className="text-center py-12"
+        >
           <div className="text-muted-foreground mb-4">
             <Filter className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No listings found</h3>
@@ -330,8 +359,9 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
           >
             Clear Filters
           </Button>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
+    </PageContent>
   );
 }

@@ -99,7 +99,7 @@ export function ChatWindow({
       if (response.error) {
         setError(response.error);
       } else {
-        setConversation(response.conversation);
+        setConversation(response);
       }
     } catch (err) {
       setError('Failed to load conversation');

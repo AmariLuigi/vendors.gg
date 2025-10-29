@@ -7,7 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import VendorLogo from '@/components/ui/vendor-logo';
+import PageContent from '@/components/layout/PageContent';
 import { Shield, Star, Users, Zap, ArrowRight, TrendingUp, Clock, CheckCircle, Search, Plus, Minus } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,27 +52,53 @@ export default function Home() {
     setIsExpanded(!isExpanded);
   };
   return (
-    <div className="flex flex-col">
+    <PageContent className="flex flex-col">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary/10 via-background to-accent/5 py-20 lg:py-32">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="space-y-8"
+            >
               <div className="space-y-4">
-                <Badge variant="secondary" className="w-fit">
-                  🎮 Trusted Gaming Marketplace
-                </Badge>
-                <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, delay: 0.5 }}
+                >
+                  <Badge variant="secondary" className="w-fit">
+                    🎮 Trusted Gaming Marketplace
+                  </Badge>
+                </motion.div>
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="text-4xl lg:text-6xl font-bold leading-tight"
+                >
                   Trade Gaming Items with{' '}
                   <span className="text-primary">Complete Security</span>
-                </h1>
-                <p className="text-xl text-muted-foreground leading-relaxed">
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.7 }}
+                  className="text-xl text-muted-foreground leading-relaxed"
+                >
                   Buy and sell gaming accounts, items, and services with confidence. 
                   Every transaction is protected by our secure escrow system.
-                </p>
+                </motion.p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                className="flex flex-col sm:flex-row gap-4"
+              >
                 <Link href="/games">
                   <Button size="lg" className="w-full sm:w-auto">
                     Browse Marketplace
@@ -82,9 +110,14 @@ export default function Home() {
                     Start Selling
                   </Button>
                 </Link>
-              </div>
+              </motion.div>
 
-              <div className="flex items-center space-x-8 text-sm">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                className="flex items-center space-x-8 text-sm"
+              >
                 <div className="flex items-center space-x-2">
                   <Shield className="w-5 h-5 text-accent" />
                   <span className="font-medium">100% Secure</span>
@@ -97,10 +130,15 @@ export default function Home() {
                   <Users className="w-5 h-5 text-accent" />
                   <span className="font-medium">50K+ Users</span>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <div className="flex justify-center lg:justify-end">
+            <motion.div 
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex justify-center lg:justify-end"
+            >
               <div className="relative">
                 <VendorLogo size="4xl" className="w-80 h-80 lg:w-96 lg:h-96" />
                 <div className="absolute -top-4 -right-4 animate-bounce">
@@ -109,7 +147,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -343,6 +381,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+    </PageContent>
   );
 }

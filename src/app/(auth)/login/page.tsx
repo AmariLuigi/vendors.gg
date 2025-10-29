@@ -1,15 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import PageContent from '@/components/layout/PageContent';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import VendorLogo from '@/components/ui/vendor-logo';
 import { Eye, EyeOff, Mail, Lock, Github, Chrome, Shield, MessageSquare } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -56,20 +60,52 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <PageContent className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="w-full max-w-md"
+      >
         {/* Logo and Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="text-center mb-8"
+        >
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.4 }}
+            className="flex justify-center mb-4"
+          >
             <VendorLogo size="lg" className="w-20 h-20" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-3xl font-bold mb-2"
+          >
+            Welcome Back
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-muted-foreground"
+          >
             Sign in to your vendors.gg account
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <Card className="shadow-lg">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <Card className="shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Sign In</CardTitle>
             <CardDescription className="text-center">
@@ -221,9 +257,15 @@ export default function LoginPage() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* Additional Trust Indicators */}
-        <div className="mt-8 text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="mt-8 text-center"
+        >
           <div className="flex justify-center space-x-4 text-xs text-muted-foreground">
             <Badge variant="outline" className="text-xs">
               🔒 SSL Encrypted
@@ -235,8 +277,8 @@ export default function LoginPage() {
               ⭐ Trusted by 50K+
             </Badge>
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </PageContent>
   );
 }

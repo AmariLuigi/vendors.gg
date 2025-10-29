@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ShoppingCart, User, Search, Shield, LogOut, Settings, MessageSquare } from 'lucide-react';
 import { ChatNotifications } from '@/components/chat/ChatNotifications';
+import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
   const { data: session, status } = useSession();
@@ -18,11 +19,20 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header 
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           {/* Logo and Brand */}
-          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
+            <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <div className="w-24 h-24 relative">
               <Image
                 src="/logo.png"
@@ -37,26 +47,36 @@ const Header: React.FC = () => {
               <span className="text-xs text-muted-foreground">Trusted Gaming Marketplace</span>
             </div>
           </Link>
+          </motion.div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/games" 
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-            >
-              Browse Games
-            </Link>
-            <Link 
-              href="/sell" 
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-            >
-              Start Selling
-            </Link>
+          <motion.nav 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="hidden md:flex items-center space-x-6"
+          >
+            <motion.div whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
+              <Link 
+                href="/games" 
+                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                Browse Games
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
+              <Link 
+                href="/sell" 
+                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                Start Selling
+              </Link>
+            </motion.div>
             <div className="flex items-center space-x-1">
               <Shield className="w-4 h-4 text-accent" />
               <span className="text-sm font-medium text-accent">Escrow Protected</span>
             </div>
-          </nav>
+          </motion.nav>
 
           {/* Search Bar */}
           <div className="hidden lg:flex items-center space-x-2 flex-1 max-w-md mx-8">
@@ -172,7 +192,7 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
