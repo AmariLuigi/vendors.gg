@@ -176,7 +176,7 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
         transition={{ duration: 0.5, delay: 0.3 }}
         className="bg-card rounded-lg p-6 border"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 items-center">
           <div className="lg:col-span-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -190,7 +190,7 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
           </div>
           
           <Select value={selectedGame} onValueChange={setSelectedGame}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="All Games" />
             </SelectTrigger>
             <SelectContent>
@@ -202,7 +202,7 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
           </Select>
 
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -214,7 +214,7 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
           </Select>
 
           <Select value={selectedRarity} onValueChange={setSelectedRarity}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="All Rarities" />
             </SelectTrigger>
             <SelectContent>
@@ -226,7 +226,7 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
           </Select>
 
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -237,11 +237,9 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
               <SelectItem value="popular">Most Popular</SelectItem>
             </SelectContent>
           </Select>
-        </div>
 
-        <div className="mt-4">
           <Select value={priceRange} onValueChange={setPriceRange}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Price Range" />
             </SelectTrigger>
             <SelectContent>
