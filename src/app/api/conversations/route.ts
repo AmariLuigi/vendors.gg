@@ -20,50 +20,10 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id; // Use authenticated user's ID
 
+    // Get conversations for the user (simplified query to avoid duplicates)
     const rawConversations = await db
-      .select({
-        id: conversations.id,
-        buyerId: conversations.buyerId,
-        sellerId: conversations.sellerId,
-        listingId: conversations.listingId,
-        orderId: conversations.orderId,
-        status: conversations.status,
-        lastMessageAt: conversations.lastMessageAt,
-        createdAt: conversations.createdAt,
-        updatedAt: conversations.updatedAt,
-        // Buyer info
-        buyerInfo: {
-          id: accounts.id,
-          firstName: accounts.firstName,
-          lastName: accounts.lastName,
-          avatar: accounts.avatar,
-          rating: accounts.rating,
-        },
-        // Listing info
-        listing: {
-          id: listings.id,
-          title: listings.title,
-          price: listings.price,
-          images: listings.images,
-        },
-        // Last message preview
-        lastMessage: {
-          id: messages.id,
-          content: messages.content,
-          senderId: messages.senderId,
-          createdAt: messages.createdAt,
-        }
-      })
+      .select()
       .from(conversations)
-      .leftJoin(
-        accounts,
-        or(
-          eq(accounts.id, conversations.buyerId),
-          eq(accounts.id, conversations.sellerId)
-        )
-      )
-      .leftJoin(listings, eq(conversations.listingId, listings.id))
-      .leftJoin(messages, eq(messages.conversationId, conversations.id))
       .where(
         or(
           eq(conversations.buyerId, userId),
@@ -75,10 +35,12 @@ export async function GET(request: NextRequest) {
     // Transform the data to match frontend expectations
     const formattedConversations = await Promise.all(
       rawConversations.map(async (conv) => {
-        // Get buyer and seller info separately
-        const [buyerInfo, sellerInfo] = await Promise.all([
+        // Get buyer, seller, listing info, and last message separately to avoid duplicates
+        const [buyerInfo, sellerInfo, listingInfo, lastMessageInfo] = await Promise.all([
           db.select().from(accounts).where(eq(accounts.id, conv.buyerId)).limit(1),
-          db.select().from(accounts).where(eq(accounts.id, conv.sellerId)).limit(1)
+          db.select().from(accounts).where(eq(accounts.id, conv.sellerId)).limit(1),
+          conv.listingId ? db.select().from(listings).where(eq(listings.id, conv.listingId)).limit(1) : Promise.resolve([]),
+          db.select().from(messages).where(eq(messages.conversationId, conv.id)).orderBy(desc(messages.createdAt)).limit(1)
         ]);
 
         return {
@@ -102,16 +64,16 @@ export async function GET(request: NextRequest) {
             lastName: sellerInfo[0].lastName,
             avatar: sellerInfo[0].avatar,
           } : null,
-          listing: conv.listing.id ? {
-            id: conv.listing.id,
-            title: conv.listing.title,
-            price: conv.listing.price,
-            images: conv.listing.images,
+          listing: listingInfo[0] ? {
+            id: listingInfo[0].id,
+            title: listingInfo[0].title,
+            price: listingInfo[0].price,
+            images: listingInfo[0].images,
           } : null,
-          lastMessage: conv.lastMessage.id ? {
-            content: conv.lastMessage.content,
-            senderId: conv.lastMessage.senderId,
-            createdAt: conv.lastMessage.createdAt,
+          lastMessage: lastMessageInfo[0] ? {
+            content: lastMessageInfo[0].content,
+            senderId: lastMessageInfo[0].senderId,
+            createdAt: lastMessageInfo[0].createdAt,
           } : null,
           unreadCount: 0, // TODO: Calculate actual unread count
         };
