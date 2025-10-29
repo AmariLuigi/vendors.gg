@@ -79,7 +79,8 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // If this is a new login, set the user data
       if (user) {
         token.id = user.id;
         token.firstName = user.firstName;
@@ -88,6 +89,33 @@ export const authOptions: NextAuthOptions = {
         token.isVerified = user.isVerified;
         token.avatar = user.avatar;
       }
+      
+      // If this is an update trigger or the token is older than 1 hour, refresh user data
+      if (trigger === 'update' || (token.id && (!token.lastUpdated || Date.now() - token.lastUpdated > 60 * 60 * 1000))) {
+        try {
+          const userRecord = await db.select({
+            id: accounts.id,
+            firstName: accounts.firstName,
+            lastName: accounts.lastName,
+            accountType: accounts.accountType,
+            isVerified: accounts.isVerified,
+            avatar: accounts.avatar,
+          }).from(accounts).where(eq(accounts.id, token.id as string)).limit(1);
+          
+          if (userRecord.length > 0) {
+            const user = userRecord[0];
+            token.firstName = user.firstName;
+            token.lastName = user.lastName;
+            token.accountType = user.accountType;
+            token.isVerified = user.isVerified;
+            token.avatar = user.avatar;
+            token.lastUpdated = Date.now();
+          }
+        } catch (error) {
+          console.error('Error refreshing user data in JWT callback:', error);
+        }
+      }
+      
       return token;
     },
     async session({ session, token }) {

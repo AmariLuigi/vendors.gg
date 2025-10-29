@@ -33,5 +33,6 @@ declare module 'next-auth/jwt' {
     accountType: string;
     isVerified: boolean | null;
     avatar: string | null | undefined;
+    lastUpdated?: number;
   }
 }

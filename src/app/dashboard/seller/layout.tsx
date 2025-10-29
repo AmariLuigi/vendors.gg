@@ -44,6 +44,11 @@ const sidebarItems = [
     icon: BarChart3,
   },
   {
+    title: 'Profile',
+    href: '/profile',
+    icon: User,
+  },
+  {
     title: 'Settings',
     href: '/dashboard/seller/settings',
     icon: Settings,

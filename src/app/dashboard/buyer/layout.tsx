@@ -48,7 +48,7 @@ const sidebarItems = [
   },
   {
     title: 'Profile',
-    href: '/dashboard/buyer/profile',
+    href: '/profile',
     icon: User,
   },
   {
@@ -270,7 +270,7 @@ function TopHeader() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/buyer/profile" className="flex items-center">
+              <Link href="/profile" className="flex items-center">
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </Link>
