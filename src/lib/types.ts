@@ -35,6 +35,36 @@ export interface League {
   tier: string;
 }
 
+// Path of Exile League from official API (legacy)
+export interface PoELeague {
+  id: string;
+  name: string;
+  realm: string;
+  url: string;
+  startAt: string | null;
+  endAt: string | null;
+  description: string;
+  category: {
+    id: string;
+  };
+  registerAt?: string;
+  delveEvent?: boolean;
+  rules: PoELeagueRule[];
+}
+
+export interface PoELeagueRule {
+  id: string;
+  name: string;
+  description: string;
+}
+
+// PoE2 League from poe2scout.com API
+export interface PoE2League {
+  value: string;
+  divinePrice: number;
+  chaosDivinePrice: number;
+}
+
 // Item types
 export interface Item {
   id: string;
