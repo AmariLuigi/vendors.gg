@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarUpload } from '@/components/ui/avatar-upload';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
@@ -80,6 +81,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [formData, setFormData] = useState<Partial<ProfileData>>({});
 
   useEffect(() => {
@@ -145,6 +147,65 @@ export default function ProfilePage() {
   const handleCancel = () => {
     setFormData(profile || {});
     setEditing(false);
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update the profile state with new avatar URL
+        setProfile(prev => prev ? { ...prev, avatar: result.avatarUrl } : null);
+        setFormData(prev => ({ ...prev, avatar: result.avatarUrl }));
+        
+        // Refresh the session to update the header avatar
+        await update();
+        
+        toast.success('Avatar uploaded successfully');
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to upload avatar');
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to upload avatar');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    try {
+      const response = await fetch('/api/upload/avatar', {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Update the profile state to remove avatar
+        setProfile(prev => prev ? { ...prev, avatar: null } : null);
+        setFormData(prev => ({ ...prev, avatar: null }));
+        
+        // Refresh the session to update the header avatar
+        await update();
+        
+        toast.success('Avatar removed successfully');
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to remove avatar');
+      }
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+      toast.error('Failed to remove avatar');
+    }
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -244,37 +305,50 @@ export default function ProfilePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4 mb-6">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={profile.avatar || ''} />
-                      <AvatarFallback className="text-lg">
-                        {profile.firstName?.[0]}{profile.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="text-xl font-semibold">
-                        {profile.firstName} {profile.lastName}
-                      </h3>
-                      <p className="text-gray-600">{profile.email}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant={profile.accountType === 'seller' ? 'default' : 'secondary'}>
-                          {profile.accountType}
-                        </Badge>
-                        {profile.isVerified && (
-                          <Badge variant="outline" className="text-green-600 border-green-600">
-                            <Shield className="h-3 w-3 mr-1" />
-                            Verified
+                  {editing ? (
+                    <div className="mb-6">
+                      <AvatarUpload
+                        currentAvatar={profile.avatar}
+                        userName={`${profile.firstName || ''} ${profile.lastName || ''}`.trim()}
+                        onUpload={handleAvatarUpload}
+                        onRemove={handleAvatarRemove}
+                        isLoading={avatarUploading}
+                        className="flex flex-col items-center"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4 mb-6">
+                      <Avatar className="h-20 w-20">
+                        <AvatarImage src={profile.avatar || ''} />
+                        <AvatarFallback className="text-lg">
+                          {profile.firstName?.[0]}{profile.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="text-xl font-semibold">
+                          {profile.firstName} {profile.lastName}
+                        </h3>
+                        <p className="text-gray-600">{profile.email}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant={profile.accountType === 'seller' ? 'default' : 'secondary'}>
+                            {profile.accountType}
                           </Badge>
-                        )}
-                        {profile.rating && typeof profile.rating === 'number' && (
-                          <Badge variant="outline">
-                            <Star className="h-3 w-3 mr-1" />
-                            {profile.rating.toFixed(1)} ({profile.totalReviews || 0} reviews)
-                          </Badge>
-                        )}
+                          {profile.isVerified && (
+                            <Badge variant="outline" className="text-green-600 border-green-600">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
+                          {profile.rating && typeof profile.rating === 'number' && (
+                            <Badge variant="outline">
+                              <Star className="h-3 w-3 mr-1" />
+                              {profile.rating.toFixed(1)} ({profile.totalReviews || 0} reviews)
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

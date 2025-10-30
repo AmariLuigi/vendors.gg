@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { ArrowLeft, ArrowRight, Save, Eye, Gamepad2, Package, DollarSign, Upload, Settings, ImageIcon, VideoIcon, Trash2, RotateCcw, Move, Calendar, Clock, Globe, Shield, Truck, Star } from "lucide-react"
+import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -533,7 +534,12 @@ export default function CreateListingPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
-      <div className="mb-8">
+      <motion.div 
+        className="mb-8"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <div className="flex items-center gap-4 mb-4">
           <Button variant="ghost" size="sm" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -554,10 +560,15 @@ export default function CreateListingPage() {
         <p className="text-muted-foreground mt-2">
           List your gaming items, currency, accounts, or services on the marketplace
         </p>
-      </div>
+      </motion.div>
 
       {/* Progress Indicator */}
-      <Card className="mb-8">
+      <motion.Card 
+        className="mb-8"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium">Progress</span>
@@ -588,10 +599,15 @@ export default function CreateListingPage() {
             })}
           </div>
         </CardContent>
-      </Card>
+      </motion.Card>
 
       {/* Main Form */}
-      <Form {...form}>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
+        <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Tabs value={steps[currentStep].id} className="w-full">
             {/* Step 1: Game & Category */}
@@ -1825,6 +1841,7 @@ export default function CreateListingPage() {
           </Card>
         </form>
       </Form>
+      </motion.div>
     </div>
   )
 }

@@ -21,6 +21,7 @@ import {
   BarChart3,
   AlertTriangle
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface MetricCardProps {
   title: string;
@@ -112,15 +113,25 @@ export default function SellerDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="flex flex-col space-y-2">
+      <motion.div 
+        className="flex flex-col space-y-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <h2 className="text-3xl font-bold tracking-tight">Welcome back!</h2>
         <p className="text-muted-foreground">
           Here's what's happening with your gaming marketplace today.
         </p>
-      </div>
+      </motion.div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div 
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
@@ -184,10 +195,15 @@ export default function SellerDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <motion.div 
+        className="grid gap-6 lg:grid-cols-3"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
         {/* Recent Activity - Takes 2 columns on large screens */}
         <div className="lg:col-span-2">
            <Card>
@@ -313,7 +329,7 @@ export default function SellerDashboard() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ShoppingCart, User, Search, Shield, LogOut, Settings, MessageSquare, X } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useConversations } from '@/hooks/useConversations';
 import { motion } from 'framer-motion';
 
@@ -221,8 +222,13 @@ const Header: React.FC = () => {
             ) : session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <User className="w-5 h-5" />
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 h-10">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user.avatar || ''} />
+                      <AvatarFallback className="text-sm">
+                        {session.user.firstName?.[0]}{session.user.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="hidden sm:inline">{session.user.firstName}</span>
                   </Button>
                 </DropdownMenuTrigger>

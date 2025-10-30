@@ -25,6 +25,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
+import { motion } from 'framer-motion';
 
 export default function BuyerFavoritesPage() {
   const { data: session } = useSession();
@@ -306,7 +307,12 @@ export default function BuyerFavoritesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col space-y-2">
+      <motion.div 
+        className="flex flex-col space-y-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">My Favorites</h2>
@@ -333,9 +339,14 @@ export default function BuyerFavoritesPage() {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filters and Controls */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
       <Card>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 items-center">
@@ -451,8 +462,14 @@ export default function BuyerFavoritesPage() {
           )}
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Favorites Grid/List */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
       {favoritesLoading ? (
         <Card>
           <CardContent className="p-12 text-center">
@@ -484,6 +501,7 @@ export default function BuyerFavoritesPage() {
           </CardContent>
         </Card>
       )}
+      </motion.div>
     </div>
   );
 }

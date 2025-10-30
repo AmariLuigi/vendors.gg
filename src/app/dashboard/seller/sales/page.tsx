@@ -22,6 +22,7 @@ import {
   Shield
 } from 'lucide-react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 interface Order {
   id: string;
@@ -302,15 +303,25 @@ export default function SalesOrders() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col space-y-2">
+      <motion.div 
+        className="flex flex-col space-y-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <h2 className="text-3xl font-bold tracking-tight">Sales & Orders</h2>
         <p className="text-muted-foreground">
           Manage your transactions and customer orders
         </p>
-      </div>
+      </motion.div>
 
       {/* Order Pipeline Overview */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <motion.div 
+        className="grid gap-4 md:grid-cols-4"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -347,10 +358,15 @@ export default function SalesOrders() {
             <p className="text-2xl font-bold mt-2">{getTabCount('completed')}</p>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Orders Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">
             All ({getTabCount('all')})
@@ -397,6 +413,7 @@ export default function SalesOrders() {
           )}
         </TabsContent>
       </Tabs>
+      </motion.div>
     </div>
   );
 }

@@ -36,14 +36,24 @@ export default function DashboardPage() {
 
   if (status === 'loading') {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="container mx-auto px-4 py-8"
+      >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+            className="text-center"
+          >
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading dashboard...</p>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -52,47 +62,28 @@ export default function DashboardPage() {
   // Show dashboard selection for users with 'both' account type or no specific type
   return (
     <PageContent className="container mx-auto px-4 py-8">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="max-w-4xl mx-auto"
-      >
+      <div className="max-w-4xl mx-auto">
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
           className="text-center mb-8"
         >
-          <motion.h1 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-3xl font-bold mb-2"
-          >
+          <h1 className="text-3xl font-bold mb-2">
             Welcome to your Dashboard
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-muted-foreground"
-          >
+          </h1>
+          <p className="text-muted-foreground">
             Choose how you'd like to use vendors.gg today
-          </motion.p>
+          </p>
         </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="grid md:grid-cols-2 gap-6"
-        >
+        <div className="grid md:grid-cols-2 gap-6">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+            initial={{ x: -400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <Link href="/dashboard/buyer">
@@ -121,10 +112,11 @@ export default function DashboardPage() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+            initial={{ x: 400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.9 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <Link href="/dashboard/seller">
@@ -151,38 +143,32 @@ export default function DashboardPage() {
             </Link>
           </Card>
           </motion.div>
-        </motion.div>
+        </div>
 
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1.1 }}
           className="text-center mt-8"
         >
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="text-sm text-muted-foreground mb-4"
-          >
+          <p className="text-sm text-muted-foreground mb-4">
             Need help getting started?
-          </motion.p>
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex justify-center gap-4"
-          >
-            <Button variant="ghost" size="sm">
-              <Users className="h-4 w-4 mr-2" />
-              Contact Support
-            </Button>
-            <Button variant="ghost" size="sm">
-              View Documentation
-            </Button>
-          </motion.div>
+          </p>
+          <div className="flex justify-center gap-4">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="ghost" size="sm">
+                <Users className="h-4 w-4 mr-2" />
+                Contact Support
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="ghost" size="sm">
+                View Documentation
+              </Button>
+            </motion.div>
+          </div>
         </motion.div>
-      </motion.div>
+      </div>
     </PageContent>
   );
 }

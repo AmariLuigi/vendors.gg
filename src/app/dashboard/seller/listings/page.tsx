@@ -22,6 +22,7 @@ import {
   Package
 } from 'lucide-react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 interface ListingCard {
   id: string;
@@ -216,7 +217,12 @@ export default function MyListings() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+      <motion.div 
+        className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <div>
           <h2 className="text-3xl font-bold tracking-tight">My Listings</h2>
           <p className="text-muted-foreground">
@@ -227,10 +233,15 @@ export default function MyListings() {
           <Plus className="h-4 w-4" />
           <span>Create New Listing</span>
         </Button>
-      </div>
+      </motion.div>
 
       {/* Search and Filters */}
-      <Card>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
+        <Card>
         <CardContent className="p-4">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <div className="relative flex-1">
@@ -249,9 +260,15 @@ export default function MyListings() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Listings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="active" className="flex items-center space-x-2">
             <span>Active</span>
@@ -320,6 +337,7 @@ export default function MyListings() {
           )}
         </TabsContent>
       </Tabs>
+      </motion.div>
 
       {/* Bulk Actions */}
       {filteredListings.length > 0 && (

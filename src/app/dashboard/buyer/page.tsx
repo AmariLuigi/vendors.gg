@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useConversations } from '@/hooks/useConversations';
+import { motion } from 'framer-motion';
 
 // Mock data for buyer dashboard
 const mockOrders = [
@@ -109,15 +110,25 @@ export default function BuyerDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="flex flex-col space-y-2">
+      <motion.div 
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="flex flex-col space-y-2"
+      >
         <h2 className="text-3xl font-bold tracking-tight">Welcome back!</h2>
         <p className="text-muted-foreground">
           Here's your gaming marketplace activity and recent purchases.
         </p>
-      </div>
+      </motion.div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div 
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
@@ -183,10 +194,15 @@ export default function BuyerDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Recent Orders and Favorites */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <motion.div 
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+        className="grid gap-6 lg:grid-cols-2"
+      >
         {/* Recent Orders */}
         <Card>
           <CardHeader>
@@ -289,10 +305,15 @@ export default function BuyerDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Quick Actions */}
-      <Card>
+      <motion.div 
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1.1 }}
+      >
+        <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>
@@ -326,6 +347,7 @@ export default function BuyerDashboard() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
     </div>
   );
 }

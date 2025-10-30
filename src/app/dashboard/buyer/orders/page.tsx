@@ -21,6 +21,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 // Mock orders data
 const mockOrders = [
@@ -245,14 +246,24 @@ export default function BuyerOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col space-y-2">
+      <motion.div 
+        className="flex flex-col space-y-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <h2 className="text-3xl font-bold tracking-tight">My Orders</h2>
         <p className="text-muted-foreground">
           Track and manage all your purchases
         </p>
-      </div>
+      </motion.div>
 
       {/* Filters and Search */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -301,8 +312,14 @@ export default function BuyerOrdersPage() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Orders Tabs */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">
@@ -364,6 +381,7 @@ export default function BuyerOrdersPage() {
           </TabsContent>
         ))}
       </Tabs>
+      </motion.div>
     </div>
   );
 }

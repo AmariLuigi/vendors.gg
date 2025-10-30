@@ -36,6 +36,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 // Mock data for charts
 const revenueData = [
@@ -163,15 +164,25 @@ export default function Analytics() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col space-y-2">
+      <motion.div 
+        className="flex flex-col space-y-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
         <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
         <p className="text-muted-foreground">
           Track your performance and optimize your sales strategy
         </p>
-      </div>
+      </motion.div>
 
       {/* Timeframe Selector */}
-      <div className="flex space-x-2">
+      <motion.div 
+        className="flex space-x-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
         {['7d', '30d', '90d'].map((period) => (
           <Button
             key={period}
@@ -184,10 +195,15 @@ export default function Analytics() {
             {period === '90d' && 'Last 90 Days'}
           </Button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <motion.div 
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
         <MetricCard
           title="Total Revenue"
           value="$3,240"
@@ -216,10 +232,15 @@ export default function Analytics() {
           trend="up"
           icon={ShoppingCart}
         />
-      </div>
+      </motion.div>
 
       {/* Charts Section */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <motion.div 
+        className="grid gap-6 lg:grid-cols-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1.1 }}
+      >
         {/* Revenue Chart */}
         <Card>
           <CardHeader>
@@ -365,6 +386,6 @@ export default function Analytics() {
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
