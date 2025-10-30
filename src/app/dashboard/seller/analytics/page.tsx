@@ -312,7 +312,7 @@ export default function Analytics() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Bottom Section */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -386,6 +386,6 @@ export default function Analytics() {
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

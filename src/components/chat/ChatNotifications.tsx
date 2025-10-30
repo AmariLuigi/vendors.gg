@@ -78,7 +78,7 @@ export function ChatNotifications({ className = '' }: ChatNotificationsProps) {
                 const otherUser = conversation.buyer?.id !== conversation.sellerId 
                   ? conversation.buyer 
                   : conversation.seller;
-                const displayName = otherUser?.name || 'Unknown User';
+                const displayName = `${otherUser?.firstName || ''} ${otherUser?.lastName || ''}`.trim() || 'Unknown User';
                 const avatarUrl = otherUser?.avatar;
                 
                 return (
@@ -88,13 +88,13 @@ export function ChatNotifications({ className = '' }: ChatNotificationsProps) {
                     className="block"
                   >
                     <div className={`p-3 border-b hover:bg-muted/50 transition-colors cursor-pointer ${
-                      conversation.unreadCount > 0 ? 'bg-blue-50/50' : ''
+                      (conversation.unreadCount || 0) > 0 ? 'bg-blue-50/50' : ''
                     }`}>
                       <div className="flex items-start space-x-3">
                         <Avatar className="w-8 h-8 flex-shrink-0">
                           <AvatarImage src={avatarUrl} />
                           <AvatarFallback className="text-xs">
-                            {displayName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            {displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         
@@ -120,7 +120,7 @@ export function ChatNotifications({ className = '' }: ChatNotificationsProps) {
                             </p>
                           )}
                           
-                          {conversation.unreadCount > 0 && (
+                          {(conversation.unreadCount || 0) > 0 && (
                             <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
                           )}
                         </div>

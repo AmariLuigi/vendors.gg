@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
+import { sanitizeImageArray, sanitizeImageUrl } from '@/lib/image-utils';
 
 interface Listing {
   id: string;
@@ -280,7 +281,12 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
               <CardHeader className="p-0">
                 <div className="relative aspect-video overflow-hidden rounded-t-lg">
                   <Image
-                    src={listing.images?.[0] || listing.game?.image || '/placeholder-game.jpg'}
+                    src={sanitizeImageUrl(
+                      sanitizeImageArray(listing.images, '/placeholder-game.svg')[0] || 
+                      listing.game?.image || 
+                      '/placeholder-game.svg',
+                      '/placeholder-game.svg'
+                    )}
                     alt={listing.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-200"

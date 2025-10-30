@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { sanitizeImageArray } from '@/lib/image-utils';
 import {
   ShoppingCart,
   Heart,
@@ -282,7 +283,7 @@ export default function BuyerDashboard() {
                   <div key={favorite.id} className="flex items-center space-x-4 p-3 rounded-lg border">
                     <div className="relative w-12 h-12 rounded-md overflow-hidden">
                       <Image
-                        src={favorite.listing.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop&crop=center'}
+                        src={sanitizeImageArray(favorite.listing.images, '/placeholder-item.svg')[0]}
                         alt={favorite.listing.title}
                         fill
                         className="object-cover"
@@ -291,7 +292,7 @@ export default function BuyerDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{favorite.listing.title}</p>
                       <p className="text-sm text-muted-foreground">{favorite.listing.game?.name}</p>
-                      <p className="text-sm text-muted-foreground">by {favorite.listing.account?.username ?? 'Unknown'}</p>
+                      <p className="text-sm text-muted-foreground">by {favorite.listing.seller ? `${favorite.listing.seller.firstName} ${favorite.listing.seller.lastName}` : 'Unknown'}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold">${favorite.listing.price}</p>

@@ -563,43 +563,45 @@ export default function CreateListingPage() {
       </motion.div>
 
       {/* Progress Indicator */}
-      <motion.Card 
+      <motion.div 
         className="mb-8"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.7 }}
       >
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium">Progress</span>
-            <span className="text-sm text-muted-foreground">{completionPercentage}% Complete</span>
-          </div>
-          <Progress value={completionPercentage} className="mb-4" />
-          
-          {/* Step Navigation */}
-          <div className="flex flex-wrap gap-2">
-            {steps.map((step, index) => {
-              const Icon = step.icon
-              const isActive = index === currentStep
-              const isCompleted = index < currentStep
-              
-              return (
-                <Button
-                  key={step.id}
-                  variant={isActive ? "default" : isCompleted ? "secondary" : "outline"}
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => goToStep(index)}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{step.title}</span>
-                  <span className="sm:hidden">{index + 1}</span>
-                </Button>
-              )
-            })}
-          </div>
-        </CardContent>
-      </motion.Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium">Progress</span>
+              <span className="text-sm text-muted-foreground">{completionPercentage}% Complete</span>
+            </div>
+            <Progress value={completionPercentage} className="mb-4" />
+            
+            {/* Step Navigation */}
+            <div className="flex flex-wrap gap-2">
+              {steps.map((step, index) => {
+                const Icon = step.icon
+                const isActive = index === currentStep
+                const isCompleted = index < currentStep
+                
+                return (
+                  <Button
+                    key={step.id}
+                    variant={isActive ? "default" : isCompleted ? "secondary" : "outline"}
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => goToStep(index)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{step.title}</span>
+                    <span className="sm:hidden">{index + 1}</span>
+                  </Button>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Main Form */}
       <motion.div

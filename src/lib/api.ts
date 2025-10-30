@@ -44,18 +44,36 @@ export const listingsAPI = {
 
 // Conversations API
 export const conversationsAPI = {
-  getAll: () => fetch(`${API_BASE_URL}/conversations`).then(res => res.json()),
-  getById: (id: string) => fetch(`${API_BASE_URL}/conversations/${id}`).then(res => res.json()),
-  create: (data: {
+  getAll: async () => {
+    const res = await fetch(`${API_BASE_URL}/conversations`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch conversations: ${res.status}`);
+    }
+    return res.json();
+  },
+  getById: async (id: string) => {
+    const res = await fetch(`${API_BASE_URL}/conversations/${id}`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch conversation: ${res.status}`);
+    }
+    return res.json();
+  },
+  create: async (data: {
     sellerId: string;
     listingId?: string;
     orderId?: string;
     initialMessage?: string;
-  }) => fetch(`${API_BASE_URL}/conversations`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  }).then(res => res.json()),
+  }) => {
+    const res = await fetch(`${API_BASE_URL}/conversations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to create conversation: ${res.status}`);
+    }
+    return res.json();
+  },
   updateStatus: (id: string, status: string) => fetch(`${API_BASE_URL}/conversations/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

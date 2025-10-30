@@ -19,18 +19,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "vendors.gg - Trusted Gaming Marketplace",
   description: "The most secure and trusted marketplace for gaming items, accounts, and services. Protected by escrow and verified sellers.",
-  themeColor: "oklch(0.145 0 0)",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    colorScheme: "dark"
-  },
   other: {
     "color-scheme": "dark",
-    "theme-color": "oklch(0.145 0 0)",
     "msapplication-navbutton-color": "oklch(0.145 0 0)",
     "apple-mobile-web-app-status-bar-style": "black-translucent"
   }
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "oklch(0.145 0 0)",
+  colorScheme: "dark"
 };
 
 export default function RootLayout({

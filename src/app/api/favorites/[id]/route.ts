@@ -8,16 +8,17 @@ import { eq, and } from 'drizzle-orm';
 // DELETE /api/favorites/[id] - Remove a favorite
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const favoriteId = params.id;
+    const favoriteId = id;
 
     // Get user account
     const user = await db.select().from(accounts).where(eq(accounts.email, session.user.email)).limit(1);
@@ -50,7 +51,7 @@ export async function DELETE(
       .where(and(eq(favorites.id, favoriteId), eq(favorites.userId, user[0].id)));
 
     // Update listing favorites count
-    if (listing.length > 0) {
+    if (listing.length > 0 && listing[0].favorites !== null) {
       await db
         .update(listings)
         .set({ 
@@ -70,16 +71,17 @@ export async function DELETE(
 // Alternative DELETE by listing ID
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const listingId = params.id;
+    const listingId = id;
 
     // Get user account
     const user = await db.select().from(accounts).where(eq(accounts.email, session.user.email)).limit(1);
@@ -112,7 +114,7 @@ export async function POST(
       .where(and(eq(favorites.listingId, listingId), eq(favorites.userId, user[0].id)));
 
     // Update listing favorites count
-    if (listing.length > 0) {
+    if (listing.length > 0 && listing[0].favorites !== null) {
       await db
         .update(listings)
         .set({ 

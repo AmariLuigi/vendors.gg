@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest) {
     
     let completedFields = 0;
     profileFields.forEach(field => {
-      if (updateData[field] || session.user[field]) {
+      if (updateData[field] || (session.user as any)[field]) {
         completedFields++;
       }
     });

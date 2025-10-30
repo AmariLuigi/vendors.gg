@@ -26,34 +26,26 @@ export async function GET(request: NextRequest) {
       .select({
         id: favorites.id,
         createdAt: favorites.createdAt,
-        listing: {
-          id: listings.id,
-          title: listings.title,
-          description: listings.description,
-          price: listings.price,
-          currency: listings.currency,
-          images: listings.images,
-          status: listings.status,
-          createdAt: listings.createdAt,
-          game: {
-            id: games.id,
-            name: games.name,
-            slug: games.slug,
-            icon: games.icon,
-          },
-          category: {
-            id: categories.id,
-            name: categories.name,
-            slug: categories.slug,
-          },
-          seller: {
-            id: accounts.id,
-            firstName: accounts.firstName,
-            lastName: accounts.lastName,
-            rating: accounts.rating,
-            avatar: accounts.avatar,
-          },
-        },
+        listingId: listings.id,
+        listingTitle: listings.title,
+        listingDescription: listings.description,
+        listingPrice: listings.price,
+        listingCurrency: listings.currency,
+        listingImages: listings.images,
+        listingStatus: listings.status,
+        listingCreatedAt: listings.createdAt,
+        gameId: games.id,
+        gameName: games.name,
+        gameSlug: games.slug,
+        gameIcon: games.icon,
+        categoryId: categories.id,
+        categoryName: categories.name,
+        categorySlug: categories.slug,
+        sellerId: accounts.id,
+        sellerFirstName: accounts.firstName,
+        sellerLastName: accounts.lastName,
+        sellerRating: accounts.rating,
+        sellerAvatar: accounts.avatar,
       })
       .from(favorites)
       .innerJoin(listings, eq(favorites.listingId, listings.id))
@@ -63,7 +55,41 @@ export async function GET(request: NextRequest) {
       .where(eq(favorites.userId, user[0].id))
       .orderBy(desc(favorites.createdAt));
 
-    return NextResponse.json({ favorites: userFavorites });
+    // Reconstruct the nested structure
+    const formattedFavorites = userFavorites.map(fav => ({
+      id: fav.id,
+      createdAt: fav.createdAt,
+      listing: {
+        id: fav.listingId,
+        title: fav.listingTitle,
+        description: fav.listingDescription,
+        price: fav.listingPrice,
+        currency: fav.listingCurrency,
+        images: fav.listingImages,
+        status: fav.listingStatus,
+        createdAt: fav.listingCreatedAt,
+        game: {
+          id: fav.gameId,
+          name: fav.gameName,
+          slug: fav.gameSlug,
+          icon: fav.gameIcon,
+        },
+        category: {
+          id: fav.categoryId,
+          name: fav.categoryName,
+          slug: fav.categorySlug,
+        },
+        seller: {
+          id: fav.sellerId,
+          firstName: fav.sellerFirstName,
+          lastName: fav.sellerLastName,
+          rating: fav.sellerRating,
+          avatar: fav.sellerAvatar,
+        },
+      },
+    }));
+
+    return NextResponse.json({ favorites: formattedFavorites });
   } catch (error) {
     console.error('Error fetching favorites:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -123,7 +149,7 @@ export async function POST(request: NextRequest) {
     await db
       .update(listings)
       .set({ 
-        favorites: listing[0].favorites + 1,
+        favorites: (listing[0].favorites || 0) + 1,
         updatedAt: new Date()
       })
       .where(eq(listings.id, listingId));

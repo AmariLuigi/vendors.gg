@@ -83,10 +83,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(formattedConversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch conversations' },
-      { status: 500 }
-    );
+    // Return empty array instead of error object to maintain API contract
+    return NextResponse.json([]);
   }
 }
 

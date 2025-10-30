@@ -13,6 +13,7 @@ import { StartConversationButton } from '@/components/chat/StartConversationButt
 import { listingsAPI } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
+import { sanitizeImageArray } from '@/lib/image-utils';
 
 interface Listing {
   id: string;
@@ -105,7 +106,7 @@ export default function ListingDetailPage() {
           description: apiListing.description,
           price: parseFloat(apiListing.price),
           currency: apiListing.currency,
-          images: apiListing.images || ['https://via.placeholder.com/800x600?text=No+Image'],
+          images: sanitizeImageArray(apiListing.images, '/placeholder-item.svg'),
           rarity: apiListing.rarity,
           condition: apiListing.condition,
           quantity: apiListing.quantity,

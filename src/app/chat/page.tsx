@@ -241,7 +241,7 @@ export default function ChatPage() {
           conversations={conversations}
           selectedConversation={selectedConversation}
           onConversationSelect={handleConversationSelect}
-          currentUserId={currentUserId}
+          currentUserId={currentUserId || ''}
           onRefresh={loadConversations}
         />
       </motion.div>
@@ -256,7 +256,7 @@ export default function ChatPage() {
         {selectedConversation ? (
           <ChatWindow
             conversationId={selectedConversation}
-            currentUserId={currentUserId}
+            currentUserId={currentUserId || ''}
             onNewMessage={handleNewMessage}
             onMarkAsRead={handleMarkAsRead}
           />

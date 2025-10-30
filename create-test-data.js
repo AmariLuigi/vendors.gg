@@ -76,7 +76,7 @@ async function createTestData() {
         '1-2 hours',
         'In-game trade',
         'active',
-        '["https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Divine+Orb"]'
+        '["/placeholder-divine-orb.svg"]'
       )
       ON CONFLICT DO NOTHING
       RETURNING id, title, price

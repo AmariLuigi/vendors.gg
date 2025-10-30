@@ -26,10 +26,11 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { motion } from 'framer-motion';
+import { sanitizeImageArray } from '@/lib/image-utils';
 
 export default function BuyerFavoritesPage() {
   const { data: session } = useSession();
-  const { favorites, favoritesLoading, removeFromFavorites } = useFavorites();
+  const { favorites, loading, removeFromFavorites } = useFavorites();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [gameFilter, setGameFilter] = useState('all');
@@ -50,13 +51,13 @@ export default function BuyerFavoritesPage() {
     originalPrice: parseFloat(fav.listing?.price || '0'),
     seller: fav.listing?.seller ? `${fav.listing.seller.firstName} ${fav.listing.seller.lastName}` : 'Unknown Seller',
     sellerRating: 4.5, // Default rating since we don't have this in our schema
-    image: fav.listing?.images?.[0] || fav.listing?.game?.image || '/placeholder-game.jpg',
-    condition: fav.listing?.condition || 'Unknown',
-    rarity: fav.listing?.rarity || 'Common',
+    image: sanitizeImageArray(fav.listing?.images, '/placeholder-game.svg')[0] || fav.listing?.game?.icon || '/placeholder-game.svg',
+    condition: 'Good', // Default condition since not in schema
+    rarity: 'Common', // Default rarity since not in schema
     addedDate: fav.createdAt,
     isOnSale: false, // We don't have sale info in our schema
     discount: 0,
-    views: fav.listing?.views || 0,
+    views: 0, // Default views since not in schema
     category: fav.listing?.category?.name || 'Unknown'
   }));
 
@@ -470,7 +471,7 @@ export default function BuyerFavoritesPage() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.9 }}
       >
-      {favoritesLoading ? (
+      {loading ? (
         <Card>
           <CardContent className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
