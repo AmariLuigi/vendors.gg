@@ -188,7 +188,6 @@ export const conversations = pgTable('conversations', {
   buyerId: uuid('buyer_id').references(() => accounts.id).notNull(),
   sellerId: uuid('seller_id').references(() => accounts.id).notNull(),
   listingId: uuid('listing_id').references(() => listings.id),
-  orderId: uuid('order_id'), // Reference to order when implemented
   status: text('status').default('active'), // 'active', 'closed', 'archived'
   lastMessageAt: timestamp('last_message_at'),
   createdAt: timestamp('created_at').defaultNow(),
@@ -236,6 +235,194 @@ export const favorites = pgTable('favorites', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+// Payment Methods table - stores user payment methods
+export const paymentMethods = pgTable('payment_methods', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => accounts.id).notNull(),
+  type: text('type').notNull(), // 'credit_card', 'paypal', 'crypto', 'bank_transfer'
+  provider: text('provider'), // 'stripe', 'paypal', 'coinbase', etc.
+  isDefault: boolean('is_default').default(false),
+  isActive: boolean('is_active').default(true),
+  
+  // Encrypted payment details (for mock system, we'll store safe mock data)
+  maskedDetails: jsonb('masked_details'), // {last4: '1234', brand: 'visa', expiryMonth: 12, expiryYear: 2025}
+  billingAddress: jsonb('billing_address'),
+  
+  // Security and verification
+  isVerified: boolean('is_verified').default(false),
+  verifiedAt: timestamp('verified_at'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Orders table - main transaction records
+export const orders = pgTable('orders', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderNumber: text('order_number').notNull().unique(), // Human-readable order number
+  
+  // Parties involved
+  buyerId: uuid('buyer_id').references(() => accounts.id).notNull(),
+  sellerId: uuid('seller_id').references(() => accounts.id).notNull(),
+  listingId: uuid('listing_id').references(() => listings.id).notNull(),
+  conversationId: uuid('conversation_id').references(() => conversations.id),
+  
+  // Order details
+  quantity: integer('quantity').notNull().default(1),
+  unitPrice: decimal('unit_price', { precision: 10, scale: 2 }).notNull(),
+  totalAmount: decimal('total_amount', { precision: 10, scale: 2 }).notNull(),
+  currency: text('currency').default('USD'),
+  
+  // Fees and calculations
+  platformFee: decimal('platform_fee', { precision: 10, scale: 2 }).default('0.00'),
+  processingFee: decimal('processing_fee', { precision: 10, scale: 2 }).default('0.00'),
+  sellerAmount: decimal('seller_amount', { precision: 10, scale: 2 }).notNull(), // Amount seller receives
+  
+  // Order status and lifecycle
+  status: text('status').default('pending'), // 'pending', 'paid', 'processing', 'delivered', 'completed', 'cancelled', 'disputed', 'refunded'
+  paymentStatus: text('payment_status').default('pending'), // 'pending', 'authorized', 'captured', 'failed', 'refunded', 'partially_refunded'
+  deliveryStatus: text('delivery_status').default('pending'), // 'pending', 'in_progress', 'delivered', 'confirmed'
+  
+  // Important timestamps
+  expiresAt: timestamp('expires_at'), // When the order expires if not paid
+  paidAt: timestamp('paid_at'),
+  deliveredAt: timestamp('delivered_at'),
+  completedAt: timestamp('completed_at'),
+  cancelledAt: timestamp('cancelled_at'),
+  
+  // Delivery and fulfillment
+  deliveryInstructions: text('delivery_instructions'),
+  deliveryProof: jsonb('delivery_proof'), // Screenshots, tracking info, etc.
+  buyerNotes: text('buyer_notes'),
+  sellerNotes: text('seller_notes'),
+  
+  // Dispute and resolution
+  disputeReason: text('dispute_reason'),
+  disputeDetails: text('dispute_details'),
+  resolutionNotes: text('resolution_notes'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Payment Transactions table - detailed payment records
+export const paymentTransactions = pgTable('payment_transactions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id').references(() => orders.id).notNull(),
+  paymentMethodId: uuid('payment_method_id').references(() => paymentMethods.id),
+  
+  // Transaction details
+  transactionId: text('transaction_id').notNull().unique(), // External payment provider transaction ID
+  type: text('type').notNull(), // 'payment', 'refund', 'chargeback', 'fee'
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+  currency: text('currency').default('USD'),
+  
+  // Payment provider details
+  provider: text('provider').notNull(), // 'mock', 'stripe', 'paypal', etc.
+  providerTransactionId: text('provider_transaction_id'),
+  providerResponse: jsonb('provider_response'), // Full response from payment provider
+  
+  // Transaction status
+  status: text('status').notNull(), // 'pending', 'processing', 'completed', 'failed', 'cancelled'
+  failureReason: text('failure_reason'),
+  
+  // Security and fraud detection
+  riskScore: decimal('risk_score', { precision: 5, scale: 2 }),
+  fraudFlags: jsonb('fraud_flags'),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  
+  // Timestamps
+  processedAt: timestamp('processed_at'),
+  settledAt: timestamp('settled_at'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Escrow table - holds funds during transaction
+export const escrowHolds = pgTable('escrow_holds', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id').references(() => orders.id).notNull(),
+  transactionId: uuid('transaction_id').references(() => paymentTransactions.id).notNull(),
+  
+  // Escrow details
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+  currency: text('currency').default('USD'),
+  status: text('status').default('held'), // 'held', 'released', 'refunded', 'disputed'
+  
+  // Release conditions
+  autoReleaseAt: timestamp('auto_release_at'), // Automatic release date
+  releaseCondition: text('release_condition'), // 'delivery_confirmed', 'time_elapsed', 'manual'
+  
+  // Release details
+  releasedAt: timestamp('released_at'),
+  releasedBy: uuid('released_by').references(() => accounts.id),
+  releaseReason: text('release_reason'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Payment Notifications table - track payment-related notifications
+export const paymentNotifications = pgTable('payment_notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => accounts.id).notNull(),
+  orderId: uuid('order_id').references(() => orders.id),
+  transactionId: uuid('transaction_id').references(() => paymentTransactions.id),
+  
+  // Notification details
+  type: text('type').notNull(), // 'payment_received', 'payment_failed', 'refund_processed', 'escrow_released', etc.
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  
+  // Delivery channels
+  channels: jsonb('channels'), // ['email', 'sms', 'push', 'in_app']
+  
+  // Status tracking
+  status: text('status').default('pending'), // 'pending', 'sent', 'delivered', 'failed'
+  sentAt: timestamp('sent_at'),
+  deliveredAt: timestamp('delivered_at'),
+  readAt: timestamp('read_at'),
+  
+  // Metadata
+  metadata: jsonb('metadata'), // Additional context data
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Refunds table - track refund requests and processing
+export const refunds = pgTable('refunds', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id').references(() => orders.id).notNull(),
+  originalTransactionId: uuid('original_transaction_id').references(() => paymentTransactions.id).notNull(),
+  refundTransactionId: uuid('refund_transaction_id').references(() => paymentTransactions.id),
+  
+  // Refund details
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+  currency: text('currency').default('USD'),
+  reason: text('reason').notNull(), // 'buyer_request', 'seller_cancel', 'dispute_resolution', 'chargeback'
+  
+  // Request details
+  requestedBy: uuid('requested_by').references(() => accounts.id).notNull(),
+  requestReason: text('request_reason'),
+  requestNotes: text('request_notes'),
+  
+  // Processing
+  status: text('status').default('pending'), // 'pending', 'approved', 'processing', 'completed', 'rejected'
+  processedBy: uuid('processed_by').references(() => accounts.id),
+  processingNotes: text('processing_notes'),
+  
+  // Timestamps
+  requestedAt: timestamp('requested_at').defaultNow(),
+  processedAt: timestamp('processed_at'),
+  completedAt: timestamp('completed_at'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 // Relations
 export const gamesRelations = relations(games, ({ many }) => ({
   categories: many(categories),
@@ -257,6 +444,23 @@ export const accountsRelations = relations(accounts, ({ many }) => ({
   sessions: many(sessions),
   verificationTokens: many(verificationTokens),
   favorites: many(favorites),
+  paymentMethods: many(paymentMethods),
+  buyerOrders: many(orders, {
+    relationName: 'buyerOrders',
+  }),
+  sellerOrders: many(orders, {
+    relationName: 'sellerOrders',
+  }),
+  paymentNotifications: many(paymentNotifications),
+  refundRequests: many(refunds, {
+    relationName: 'refundRequests',
+  }),
+  processedRefunds: many(refunds, {
+    relationName: 'processedRefunds',
+  }),
+  escrowReleases: many(escrowHolds, {
+    relationName: 'escrowReleases',
+  }),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -323,6 +527,7 @@ export const listingsRelations = relations(listings, ({ one, many }) => ({
   }),
   conversations: many(conversations),
   favorites: many(favorites),
+  orders: many(orders),
 }));
 
 // Conversations relations
@@ -380,5 +585,116 @@ export const favoritesRelations = relations(favorites, ({ one }) => ({
   listing: one(listings, {
     fields: [favorites.listingId],
     references: [listings.id],
+  }),
+}));
+
+// Payment system relations
+export const paymentMethodsRelations = relations(paymentMethods, ({ one, many }) => ({
+  user: one(accounts, {
+    fields: [paymentMethods.userId],
+    references: [accounts.id],
+  }),
+  transactions: many(paymentTransactions),
+}));
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  buyer: one(accounts, {
+    fields: [orders.buyerId],
+    references: [accounts.id],
+    relationName: 'buyerOrders',
+  }),
+  seller: one(accounts, {
+    fields: [orders.sellerId],
+    references: [accounts.id],
+    relationName: 'sellerOrders',
+  }),
+  listing: one(listings, {
+    fields: [orders.listingId],
+    references: [listings.id],
+  }),
+  conversation: one(conversations, {
+    fields: [orders.conversationId],
+    references: [conversations.id],
+  }),
+  transactions: many(paymentTransactions),
+  escrowHolds: many(escrowHolds),
+  notifications: many(paymentNotifications),
+  refunds: many(refunds),
+}));
+
+export const paymentTransactionsRelations = relations(paymentTransactions, ({ one, many }) => ({
+  order: one(orders, {
+    fields: [paymentTransactions.orderId],
+    references: [orders.id],
+  }),
+  paymentMethod: one(paymentMethods, {
+    fields: [paymentTransactions.paymentMethodId],
+    references: [paymentMethods.id],
+  }),
+  escrowHolds: many(escrowHolds),
+  notifications: many(paymentNotifications),
+  originalRefunds: many(refunds, {
+    relationName: 'originalRefunds',
+  }),
+  refundTransactions: many(refunds, {
+    relationName: 'refundTransactions',
+  }),
+}));
+
+export const escrowHoldsRelations = relations(escrowHolds, ({ one }) => ({
+  order: one(orders, {
+    fields: [escrowHolds.orderId],
+    references: [orders.id],
+  }),
+  transaction: one(paymentTransactions, {
+    fields: [escrowHolds.transactionId],
+    references: [paymentTransactions.id],
+  }),
+  releasedBy: one(accounts, {
+    fields: [escrowHolds.releasedBy],
+    references: [accounts.id],
+    relationName: 'escrowReleases',
+  }),
+}));
+
+export const paymentNotificationsRelations = relations(paymentNotifications, ({ one }) => ({
+  user: one(accounts, {
+    fields: [paymentNotifications.userId],
+    references: [accounts.id],
+  }),
+  order: one(orders, {
+    fields: [paymentNotifications.orderId],
+    references: [orders.id],
+  }),
+  transaction: one(paymentTransactions, {
+    fields: [paymentNotifications.transactionId],
+    references: [paymentTransactions.id],
+  }),
+}));
+
+export const refundsRelations = relations(refunds, ({ one }) => ({
+  order: one(orders, {
+    fields: [refunds.orderId],
+    references: [orders.id],
+  }),
+  originalTransaction: one(paymentTransactions, {
+    fields: [refunds.originalTransactionId],
+    references: [paymentTransactions.id],
+    relationName: 'originalRefunds',
+  }),
+  refundTransaction: one(paymentTransactions, {
+    fields: [refunds.refundTransactionId],
+    references: [paymentTransactions.id],
+    relationName: 'refundTransactions',
+  }),
+  requestedBy: one(accounts, {
+    fields: [refunds.requestedBy],
+    references: [accounts.id],
+    relationName: 'refundRequests',
+  }),
+  processedBy: one(accounts, {
+    fields: [refunds.processedBy],
+    references: [accounts.id],
+    relationName: 'processedRefunds',
   }),
 }));

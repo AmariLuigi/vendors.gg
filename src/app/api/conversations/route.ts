@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
           buyerId: conv.buyerId,
           sellerId: conv.sellerId,
           listingId: conv.listingId,
-          orderId: conv.orderId,
           status: conv.status,
           lastMessageAt: conv.lastMessageAt,
           createdAt: conv.createdAt,
@@ -102,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { sellerId, listingId, orderId, initialMessage } = body;
+    const { sellerId, listingId, initialMessage } = body;
     const buyerId = session.user.id; // Use authenticated user's ID
 
     // Validate required fields
@@ -152,14 +151,13 @@ export async function POST(request: NextRequest) {
         buyerId,
         sellerId,
         listingId: listingId || null,
-        orderId: orderId || null,
         status: 'active',
         lastMessageAt: new Date(),
       })
       .returning();
 
     // Send initial message if provided
-    if (initialMessage && newConversation[0]) {
+    if (initialMessage && Array.isArray(newConversation) && newConversation.length > 0) {
       await db
         .insert(messages)
         .values({
@@ -178,7 +176,6 @@ export async function POST(request: NextRequest) {
         buyerId: conversations.buyerId,
         sellerId: conversations.sellerId,
         listingId: conversations.listingId,
-        orderId: conversations.orderId,
         status: conversations.status,
         lastMessageAt: conversations.lastMessageAt,
         createdAt: conversations.createdAt,
@@ -200,7 +197,7 @@ export async function POST(request: NextRequest) {
       .from(conversations)
       .leftJoin(accounts, eq(conversations.buyerId, accounts.id))
       .leftJoin(listings, eq(conversations.listingId, listings.id))
-      .where(eq(conversations.id, newConversation[0].id))
+      .where(eq(conversations.id, Array.isArray(newConversation) ? newConversation[0].id : ''))
       .limit(1);
 
     return NextResponse.json(

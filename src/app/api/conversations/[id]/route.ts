@@ -32,7 +32,6 @@ export async function GET(
         buyerId: conversations.buyerId,
         sellerId: conversations.sellerId,
         listingId: conversations.listingId,
-        orderId: conversations.orderId,
         status: conversations.status,
         lastMessageAt: conversations.lastMessageAt,
         createdAt: conversations.createdAt,

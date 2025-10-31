@@ -22,7 +22,8 @@ import {
   LogOut,
   Package,
   Search,
-  X
+  X,
+  CreditCard
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -35,6 +36,11 @@ const sidebarItems = [
     title: 'My Orders',
     href: '/dashboard/buyer/orders',
     icon: ShoppingCart,
+  },
+  {
+    title: 'Payment Methods',
+    href: '/dashboard/buyer/payments',
+    icon: CreditCard,
   },
   {
     title: 'Favorites',

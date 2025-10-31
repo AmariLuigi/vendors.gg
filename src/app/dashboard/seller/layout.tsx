@@ -19,7 +19,8 @@ import {
   User,
   LogOut,
   Search,
-  MessageCircle
+  MessageCircle,
+  CreditCard
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -37,6 +38,11 @@ const sidebarItems = [
     title: 'Sales & Orders',
     href: '/dashboard/seller/sales',
     icon: ShoppingCart,
+  },
+  {
+    title: 'Payments',
+    href: '/dashboard/seller/payments',
+    icon: CreditCard,
   },
   {
     title: 'Analytics',
