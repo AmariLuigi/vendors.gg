@@ -1,9 +1,10 @@
 import { pgTable, text, integer, boolean, timestamp, uuid, jsonb, decimal, varchar } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 // Games table
 export const games = pgTable('games', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   icon: text('icon'),
@@ -15,7 +16,7 @@ export const games = pgTable('games', {
 
 // Accounts table
 export const accounts = pgTable('accounts', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   email: text('email').notNull().unique(),
@@ -89,7 +90,7 @@ export const accounts = pgTable('accounts', {
 
 // Categories table
 export const categories = pgTable('categories', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   name: text('name').notNull(),
   slug: text('slug').notNull(),
   gameId: uuid('game_id').references(() => games.id),
@@ -99,7 +100,7 @@ export const categories = pgTable('categories', {
 
 // Subcategories table
 export const subcategories = pgTable('subcategories', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   name: text('name').notNull(),
   slug: text('slug').notNull(),
   categoryId: uuid('category_id').references(() => categories.id),
@@ -110,7 +111,7 @@ export const subcategories = pgTable('subcategories', {
 
 // Servers table
 export const servers = pgTable('servers', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   name: text('name').notNull(),
   region: text('region'),
   gameId: uuid('game_id').references(() => games.id),
@@ -120,7 +121,7 @@ export const servers = pgTable('servers', {
 
 // Leagues table (for games like PoE)
 export const leagues = pgTable('leagues', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   name: text('name').notNull(),
   slug: text('slug').notNull(),
   gameId: uuid('game_id').references(() => games.id),
@@ -132,7 +133,7 @@ export const leagues = pgTable('leagues', {
 
 // Listings table
 export const listings = pgTable('listings', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   sellerId: uuid('seller_id').references(() => accounts.id).notNull(),
   gameId: uuid('game_id').references(() => games.id).notNull(),
   serverId: uuid('server_id').references(() => servers.id),
@@ -184,7 +185,7 @@ export const listings = pgTable('listings', {
 
 // Conversations table
 export const conversations = pgTable('conversations', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   buyerId: uuid('buyer_id').references(() => accounts.id).notNull(),
   sellerId: uuid('seller_id').references(() => accounts.id).notNull(),
   listingId: uuid('listing_id').references(() => listings.id),
@@ -196,7 +197,7 @@ export const conversations = pgTable('conversations', {
 
 // Messages table
 export const messages = pgTable('messages', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   conversationId: uuid('conversation_id').references(() => conversations.id).notNull(),
   senderId: uuid('sender_id').references(() => accounts.id).notNull(),
   content: text('content').notNull(),
@@ -210,7 +211,7 @@ export const messages = pgTable('messages', {
 
 // Sessions table for authentication
 export const sessions = pgTable('sessions', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   userId: uuid('user_id').references(() => accounts.id).notNull(),
   sessionToken: text('session_token').notNull().unique(),
   expires: timestamp('expires').notNull(),
@@ -219,7 +220,7 @@ export const sessions = pgTable('sessions', {
 
 // Verification tokens table
 export const verificationTokens = pgTable('verification_tokens', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   userId: uuid('user_id').references(() => accounts.id),
   token: text('token').notNull().unique(),
   type: text('type').notNull(), // 'email_verification', 'password_reset'
@@ -229,7 +230,7 @@ export const verificationTokens = pgTable('verification_tokens', {
 
 // Favorites table
 export const favorites = pgTable('favorites', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   userId: uuid('user_id').references(() => accounts.id).notNull(),
   listingId: uuid('listing_id').references(() => listings.id).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
@@ -237,7 +238,7 @@ export const favorites = pgTable('favorites', {
 
 // Payment Methods table - stores user payment methods
 export const paymentMethods = pgTable('payment_methods', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   userId: uuid('user_id').references(() => accounts.id).notNull(),
   type: text('type').notNull(), // 'credit_card', 'paypal', 'crypto', 'bank_transfer'
   provider: text('provider'), // 'stripe', 'paypal', 'coinbase', etc.
@@ -258,7 +259,7 @@ export const paymentMethods = pgTable('payment_methods', {
 
 // Orders table - main transaction records
 export const orders = pgTable('orders', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   orderNumber: text('order_number').notNull().unique(), // Human-readable order number
   
   // Parties involved
@@ -307,7 +308,7 @@ export const orders = pgTable('orders', {
 
 // Payment Transactions table - detailed payment records
 export const paymentTransactions = pgTable('payment_transactions', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   orderId: uuid('order_id').references(() => orders.id).notNull(),
   paymentMethodId: uuid('payment_method_id').references(() => paymentMethods.id),
   
@@ -342,7 +343,7 @@ export const paymentTransactions = pgTable('payment_transactions', {
 
 // Escrow table - holds funds during transaction
 export const escrowHolds = pgTable('escrow_holds', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   orderId: uuid('order_id').references(() => orders.id).notNull(),
   transactionId: uuid('transaction_id').references(() => paymentTransactions.id).notNull(),
   
@@ -366,7 +367,7 @@ export const escrowHolds = pgTable('escrow_holds', {
 
 // Payment Notifications table - track payment-related notifications
 export const paymentNotifications = pgTable('payment_notifications', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   userId: uuid('user_id').references(() => accounts.id).notNull(),
   orderId: uuid('order_id').references(() => orders.id),
   transactionId: uuid('transaction_id').references(() => paymentTransactions.id),
@@ -394,7 +395,7 @@ export const paymentNotifications = pgTable('payment_notifications', {
 
 // Refunds table - track refund requests and processing
 export const refunds = pgTable('refunds', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   orderId: uuid('order_id').references(() => orders.id).notNull(),
   originalTransactionId: uuid('original_transaction_id').references(() => paymentTransactions.id).notNull(),
   refundTransactionId: uuid('refund_transaction_id').references(() => paymentTransactions.id),
@@ -425,7 +426,7 @@ export const refunds = pgTable('refunds', {
 
 // Disputes table
 export const disputes = pgTable('disputes', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   orderId: uuid('order_id').references(() => orders.id).notNull(),
   escrowId: uuid('escrow_id').references(() => escrowHolds.id), // Optional escrow reference
   
@@ -465,7 +466,7 @@ export const disputes = pgTable('disputes', {
 
 // Dispute Messages table
 export const disputeMessages = pgTable('dispute_messages', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   disputeId: uuid('dispute_id').references(() => disputes.id).notNull(),
   
   // Message details
@@ -816,7 +817,7 @@ export const disputeMessagesRelations = relations(disputeMessages, ({ one }) => 
 
 // Audit Logs Table
 export const auditLogs = pgTable('audit_logs', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').primaryKey().$default(() => randomUUID()),
   userId: text('user_id').references(() => accounts.id),
   action: text('action').notNull(),
   resource: text('resource').notNull(),
