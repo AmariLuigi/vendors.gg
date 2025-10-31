@@ -31,7 +31,7 @@ export function usePaymentNotifications(): UsePaymentNotificationsReturn {
       setLoading(true)
       setError(null)
       
-      const response = await fetch('/api/notifications/payments', {
+      const response = await fetch('/api/payments/notifications', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -54,11 +54,14 @@ export function usePaymentNotifications(): UsePaymentNotificationsReturn {
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notifications/payments/${notificationId}/read`, {
+      const response = await fetch('/api/payments/notifications', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          notificationIds: [notificationId]
+        })
       })
 
       if (!response.ok) {
@@ -82,11 +85,20 @@ export function usePaymentNotifications(): UsePaymentNotificationsReturn {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const response = await fetch('/api/notifications/payments/read-all', {
+      const unreadIds = notifications
+        .filter(notification => !notification.readAt)
+        .map(notification => notification.id)
+      
+      if (unreadIds.length === 0) return
+
+      const response = await fetch('/api/payments/notifications', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          notificationIds: unreadIds
+        })
       })
 
       if (!response.ok) {
@@ -101,11 +113,11 @@ export function usePaymentNotifications(): UsePaymentNotificationsReturn {
       console.error('Error marking all notifications as read:', err)
       throw err
     }
-  }, [])
+  }, [notifications])
 
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notifications/payments/${notificationId}`, {
+      const response = await fetch(`/api/payments/notifications?ids=${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
