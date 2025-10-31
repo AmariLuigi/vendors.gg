@@ -423,6 +423,67 @@ export const refunds = pgTable('refunds', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
+// Disputes table
+export const disputes = pgTable('disputes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id').references(() => orders.id).notNull(),
+  escrowId: uuid('escrow_id').references(() => escrowHolds.id), // Optional escrow reference
+  
+  // Dispute details
+  type: text('type').notNull(), // 'payment', 'delivery', 'quality', 'other'
+  reason: text('reason').notNull(),
+  description: text('description').notNull(),
+  requestedAmount: decimal('requested_amount', { precision: 10, scale: 2 }), // Amount being disputed
+  
+  // Parties involved
+  createdBy: uuid('created_by').references(() => accounts.id).notNull(), // User who created the dispute
+  initiatedBy: uuid('initiated_by').references(() => accounts.id).notNull(), // buyer or seller who started dispute
+  respondentId: uuid('respondent_id').references(() => accounts.id).notNull(), // the other party
+  
+  // Status and resolution
+  status: text('status').default('open'), // 'open', 'in_review', 'escalated', 'resolved', 'closed'
+  priority: text('priority').default('medium'), // 'low', 'medium', 'high', 'urgent'
+  
+  // Escalation details
+  escalatedAt: timestamp('escalated_at'),
+  escalationReason: text('escalation_reason'),
+  
+  // Resolution details
+  resolution: text('resolution'), // 'refund', 'partial_refund', 'release_escrow', 'no_action'
+  resolutionAmount: decimal('resolution_amount', { precision: 10, scale: 2 }),
+  resolutionNotes: text('resolution_notes'),
+  resolvedBy: uuid('resolved_by').references(() => accounts.id), // admin/mediator who resolved
+  resolvedAt: timestamp('resolved_at'),
+  
+  // Evidence and attachments
+  evidence: jsonb('evidence'), // array of file URLs, screenshots, etc.
+  
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Dispute Messages table
+export const disputeMessages = pgTable('dispute_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  disputeId: uuid('dispute_id').references(() => disputes.id).notNull(),
+  
+  // Message details
+  senderId: uuid('sender_id').references(() => accounts.id).notNull(),
+  message: text('message').notNull(),
+  messageType: text('message_type').default('text'), // 'text', 'system', 'evidence'
+  
+  // Attachments
+  attachments: jsonb('attachments'), // array of file URLs
+  
+  // Visibility
+  isInternal: boolean('is_internal').default(false), // only visible to admins/mediators
+  
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 // Relations
 export const gamesRelations = relations(games, ({ many }) => ({
   categories: many(categories),
@@ -461,6 +522,16 @@ export const accountsRelations = relations(accounts, ({ many }) => ({
   escrowReleases: many(escrowHolds, {
     relationName: 'escrowReleases',
   }),
+  initiatedDisputes: many(disputes, {
+    relationName: 'initiatedDisputes',
+  }),
+  respondentDisputes: many(disputes, {
+    relationName: 'respondentDisputes',
+  }),
+  resolvedDisputes: many(disputes, {
+    relationName: 'resolvedDisputes',
+  }),
+  disputeMessages: many(disputeMessages),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -620,6 +691,7 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
   escrowHolds: many(escrowHolds),
   notifications: many(paymentNotifications),
   refunds: many(refunds),
+  disputes: many(disputes),
 }));
 
 export const paymentTransactionsRelations = relations(paymentTransactions, ({ one, many }) => ({
@@ -696,5 +768,69 @@ export const refundsRelations = relations(refunds, ({ one }) => ({
     fields: [refunds.processedBy],
     references: [accounts.id],
     relationName: 'processedRefunds',
+  }),
+}));
+
+export const disputesRelations = relations(disputes, ({ one, many }) => ({
+  order: one(orders, {
+    fields: [disputes.orderId],
+    references: [orders.id],
+  }),
+  escrow: one(escrowHolds, {
+    fields: [disputes.escrowId],
+    references: [escrowHolds.id],
+  }),
+  createdBy: one(accounts, {
+    fields: [disputes.createdBy],
+    references: [accounts.id],
+    relationName: 'createdDisputes',
+  }),
+  initiatedBy: one(accounts, {
+    fields: [disputes.initiatedBy],
+    references: [accounts.id],
+    relationName: 'initiatedDisputes',
+  }),
+  respondent: one(accounts, {
+    fields: [disputes.respondentId],
+    references: [accounts.id],
+    relationName: 'respondentDisputes',
+  }),
+  resolvedBy: one(accounts, {
+    fields: [disputes.resolvedBy],
+    references: [accounts.id],
+    relationName: 'resolvedDisputes',
+  }),
+  messages: many(disputeMessages),
+}));
+
+export const disputeMessagesRelations = relations(disputeMessages, ({ one }) => ({
+  dispute: one(disputes, {
+    fields: [disputeMessages.disputeId],
+    references: [disputes.id],
+  }),
+  sender: one(accounts, {
+    fields: [disputeMessages.senderId],
+    references: [accounts.id],
+  }),
+}));
+
+// Audit Logs Table
+export const auditLogs = pgTable('audit_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').references(() => accounts.id),
+  action: text('action').notNull(),
+  resource: text('resource').notNull(),
+  resourceId: text('resource_id').notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  metadata: jsonb('metadata'),
+  riskLevel: text('risk_level'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(accounts, {
+    fields: [auditLogs.userId],
+    references: [accounts.id],
   }),
 }));

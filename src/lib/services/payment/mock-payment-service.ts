@@ -287,6 +287,35 @@ export class MockPaymentService implements PaymentProviderInterface {
     };
   }
 
+  async capturePayment(transactionId: string, amount: number): Promise<PaymentResponse> {
+    console.log('🔄 Processing mock capture:', { transactionId, amount });
+
+    const transaction = this.transactions.get(transactionId);
+    if (!transaction) {
+      throw new PaymentError('Transaction not found', 'TRANSACTION_NOT_FOUND', 404);
+    }
+
+    if (amount > transaction.amount) {
+      throw new PaymentError('Capture amount exceeds authorized amount', 'INVALID_AMOUNT', 400);
+    }
+
+    // Simulate processing delay
+    await this.delay(1000);
+
+    // Update transaction status to captured
+    transaction.status = 'completed';
+    transaction.updatedAt = new Date();
+    this.transactions.set(transactionId, transaction);
+
+    console.log('✅ Mock capture successful');
+    return {
+      success: true,
+      transactionId,
+      status: 'completed',
+      message: 'Payment captured successfully'
+    };
+  }
+
   async getTransactionStatus(transactionId: string): Promise<TransactionStatus> {
     const transaction = this.transactions.get(transactionId);
     if (!transaction) {

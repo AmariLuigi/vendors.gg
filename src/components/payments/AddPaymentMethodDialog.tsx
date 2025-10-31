@@ -26,6 +26,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { usePaymentMethods } from "@/lib/hooks/usePayments"
+import { validateCardNumber, validateExpiryDate, validateCvv, validateCardholderName, formatCardNumber, getCardIcon } from "@/lib/utils/cardValidation"
+import { PaymentIconWrapper } from "./PaymentIconWrapper"
 import type { PaymentMethodType } from "@/lib/types/payment"
 
 const paymentMethodSchema = z.object({
@@ -35,7 +37,7 @@ const paymentMethodSchema = z.object({
   expiryYear: z.string().optional(),
   cvv: z.string().optional(),
   cardholderName: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().email("Invalid email format").optional().or(z.literal("")),
   accountNumber: z.string().optional(),
   routingNumber: z.string().optional(),
   walletAddress: z.string().optional(),
@@ -47,22 +49,123 @@ const paymentMethodSchema = z.object({
     country: z.string().min(1, "Country is required"),
   }),
   isDefault: z.boolean().default(false),
-}).refine((data) => {
+}).superRefine((data, ctx) => {
   if (data.type === 'credit_card' || data.type === 'debit_card') {
-    return data.cardNumber && data.expiryMonth && data.expiryYear && data.cvv && data.cardholderName
+    // Validate card number
+    if (!data.cardNumber || data.cardNumber.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Card number is required",
+        path: ["cardNumber"]
+      });
+    } else {
+      const cardValidation = validateCardNumber(data.cardNumber);
+      if (!cardValidation.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid card number",
+          path: ["cardNumber"]
+        });
+      }
+    }
+    
+    // Validate expiry date
+    if (!data.expiryMonth || data.expiryMonth.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Expiry month is required",
+        path: ["expiryMonth"]
+      });
+    }
+    if (!data.expiryYear || data.expiryYear.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Expiry year is required",
+        path: ["expiryYear"]
+      });
+    }
+    if (data.expiryMonth && data.expiryYear) {
+      const expiryValidation = validateExpiryDate(data.expiryMonth, data.expiryYear);
+      if (!expiryValidation.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid or expired date",
+          path: ["expiryMonth"]
+        });
+      }
+    }
+    
+    // Validate CVV
+    if (!data.cvv || data.cvv.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "CVV is required",
+        path: ["cvv"]
+      });
+    } else {
+      const cardValidation = validateCardNumber(data.cardNumber || '');
+      const cvvValidation = validateCvv(data.cvv, data.cardNumber);
+      if (!cvvValidation.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Invalid CVV (${cardValidation.cvvName})`,
+          path: ["cvv"]
+        });
+      }
+    }
+    
+    // Validate cardholder name
+    if (!data.cardholderName || data.cardholderName.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Cardholder name is required",
+        path: ["cardholderName"]
+      });
+    } else {
+      const nameValidation = validateCardholderName(data.cardholderName);
+      if (!nameValidation.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid cardholder name",
+          path: ["cardholderName"]
+        });
+      }
+    }
   }
   if (data.type === 'paypal') {
-    return data.email
+    if (!data.email || data.email.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Email is required for PayPal",
+        path: ["email"]
+      });
+    }
   }
   if (data.type === 'bank_transfer') {
-    return data.accountNumber && data.routingNumber
+    if (!data.accountNumber || data.accountNumber.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Account number is required",
+        path: ["accountNumber"]
+      });
+    }
+    if (!data.routingNumber || data.routingNumber.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Routing number is required",
+        path: ["routingNumber"]
+      });
+    }
   }
   if (data.type === 'crypto') {
-    return data.walletAddress
+    if (!data.walletAddress || data.walletAddress.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Wallet address is required",
+        path: ["walletAddress"]
+      });
+    }
   }
-  return true
-}, {
-  message: "Please fill in all required fields for the selected payment method type",
 })
 
 type PaymentMethodFormData = z.infer<typeof paymentMethodSchema>
@@ -103,40 +206,61 @@ export function AddPaymentMethodDialog({ children, onSuccess }: AddPaymentMethod
   const selectedType = form.watch('type')
 
   const onSubmit = async (data: PaymentMethodFormData) => {
+    console.log('Form submitted with data:', data);
+    
     try {
-      const paymentMethodData = {
+      const paymentMethodData: any = {
         type: data.type,
         isDefault: data.isDefault,
         billingAddress: data.billingAddress,
-        details: {} as any,
       }
 
-      // Add type-specific details
+      // Add type-specific masked details (API expects maskedDetails, not raw details)
       if (data.type === 'credit_card' || data.type === 'debit_card') {
-        paymentMethodData.details = {
-          cardNumber: data.cardNumber!,
+        // Extract last 4 digits and determine card brand
+        const cardNumber = data.cardNumber!.replace(/\s/g, '');
+        const last4 = cardNumber.slice(-4);
+        
+        // Simple brand detection (in production, use a proper library)
+        let brand = 'unknown';
+        if (cardNumber.startsWith('4')) brand = 'visa';
+        else if (cardNumber.startsWith('5') || cardNumber.startsWith('2')) brand = 'mastercard';
+        else if (cardNumber.startsWith('3')) brand = 'amex';
+        
+        paymentMethodData.maskedDetails = {
+          last4,
+          brand,
           expiryMonth: parseInt(data.expiryMonth!),
           expiryYear: parseInt(data.expiryYear!),
-          cvv: data.cvv!,
-          cardholderName: data.cardholderName!,
+          holderName: data.cardholderName!,
         }
       } else if (data.type === 'paypal') {
-        paymentMethodData.details = { email: data.email! }
+        paymentMethodData.maskedDetails = { 
+          email: data.email!.replace(/(.{2}).*(@.*)/, '$1***$2') // Mask email
+        }
       } else if (data.type === 'bank_transfer') {
-        paymentMethodData.details = {
-          accountNumber: data.accountNumber!,
+        paymentMethodData.maskedDetails = {
+          accountNumber: `***${data.accountNumber!.slice(-4)}`, // Mask account number
           routingNumber: data.routingNumber!,
         }
       } else if (data.type === 'crypto') {
-        paymentMethodData.details = { walletAddress: data.walletAddress! }
+        paymentMethodData.maskedDetails = { 
+          walletAddress: `${data.walletAddress!.slice(0, 6)}...${data.walletAddress!.slice(-4)}` // Mask wallet
+        }
       }
 
-      await addPaymentMethod(paymentMethodData)
+      console.log('Sending payment method data:', paymentMethodData);
+      
+      const result = await addPaymentMethod(paymentMethodData);
+      console.log('Payment method added successfully:', result);
+      
       setOpen(false)
       form.reset()
       onSuccess?.()
     } catch (error) {
-      console.error('Failed to add payment method:', error)
+      console.error('Failed to add payment method:', error);
+      // Show error to user
+      alert(`Failed to add payment method: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -162,15 +286,35 @@ export function AddPaymentMethodDialog({ children, onSuccess }: AddPaymentMethod
             <FormField
               control={form.control}
               name="cardNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Card Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="1234 5678 9012 3456" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const cardIconInfo = getCardIcon(field.value || '');
+                return (
+                  <FormItem>
+                    <FormLabel>Card Number</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input 
+                          placeholder="1234 5678 9012 3456" 
+                          {...field}
+                          onChange={(e) => {
+                            const formatted = formatCardNumber(e.target.value);
+                            field.onChange(formatted);
+                          }}
+                          maxLength={23} // Max length for formatted card number with spaces
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          {cardIconInfo.type ? (
+                            <PaymentIconWrapper type={cardIconInfo.type} format="flat" className="h-6 w-8" />
+                          ) : (
+                            <CreditCard className="h-6 w-8 text-gray-400" />
+                          )}
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
             <div className="grid grid-cols-3 gap-4">
               <FormField
@@ -227,15 +371,31 @@ export function AddPaymentMethodDialog({ children, onSuccess }: AddPaymentMethod
               <FormField
                 control={form.control}
                 name="cvv"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CVV</FormLabel>
-                    <FormControl>
-                      <Input placeholder="123" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const cardNumber = form.watch('cardNumber') || '';
+                  const cardValidation = validateCardNumber(cardNumber);
+                  const maxLength = cardValidation.cvvLength;
+                  const placeholder = cardValidation.cvvName === 'CID' ? '1234' : '123';
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel>{cardValidation.cvvName || 'CVV'}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={placeholder}
+                          {...field}
+                          maxLength={maxLength}
+                          onChange={(e) => {
+                            // Only allow digits
+                            const value = e.target.value.replace(/\D/g, '');
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
           </>

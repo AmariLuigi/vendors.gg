@@ -53,6 +53,11 @@ export interface PaymentMethod {
     expiryMonth?: number;
     expiryYear?: number;
     holderName?: string;
+    stripePaymentMethodId?: string; // For Stripe payment methods
+    email?: string; // For PayPal
+    accountNumber?: string; // For bank transfers
+    routingNumber?: string; // For bank transfers
+    walletAddress?: string; // For crypto
   };
   billingAddress?: {
     street: string;
@@ -222,6 +227,7 @@ export interface PaymentProviderInterface {
   name: PaymentProvider;
   processPayment(request: PaymentRequest): Promise<PaymentResponse>;
   refundPayment(transactionId: string, amount: number): Promise<PaymentResponse>;
+  capturePayment(transactionId: string, amount: number): Promise<PaymentResponse>;
   getTransactionStatus(transactionId: string): Promise<TransactionStatus>;
   validatePaymentMethod(paymentMethod: Partial<PaymentMethod>): Promise<boolean>;
 }
@@ -316,6 +322,14 @@ export interface ProcessPaymentRequest {
   orderId: string;
   paymentMethodId: string;
   savePaymentMethod?: boolean;
+}
+
+// Refund Request Interface
+export interface RefundRequest {
+  transactionId: string;
+  amount: number;
+  reason?: string;
+  metadata?: Record<string, any>;
 }
 
 // Webhook Event Types

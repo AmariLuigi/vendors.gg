@@ -7,6 +7,7 @@ import { paymentTransactions, orders, escrowHolds, refunds } from '@/lib/db/sche
 import { eq, and } from 'drizzle-orm';
 import { WebhookEvent, PaymentStatus, TransactionStatus, PaymentProvider } from '@/lib/types/payment';
 import { getPaymentProvider } from '@/lib/services/payment/payment-factory';
+import { EscrowService } from '@/lib/services/escrow/escrow-service';
 import crypto from 'crypto';
 
 // Webhook signature verification

@@ -9,6 +9,7 @@ import { escrowHolds, orders, paymentTransactions, paymentNotifications } from '
 import { eq, and, desc } from 'drizzle-orm';
 import { ApiResponse, PaginatedResponse, PaymentError, Currency } from '@/lib/types/payment';
 import { getPaymentProvider } from '@/lib/services/payment/payment-factory';
+import { EscrowService } from '@/lib/services/escrow/escrow-service';
 import { z } from 'zod';
 
 // Validation schemas

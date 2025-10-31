@@ -8,27 +8,7 @@ import {
   PaymentError 
 } from '@/lib/types/payment';
 import { MockPaymentService } from './mock-payment-service';
-
-// Future payment providers (stubs for now)
-class StripePaymentService implements PaymentProviderInterface {
-  name: PaymentProvider = 'stripe';
-  
-  async processPayment(): Promise<any> {
-    throw new PaymentError('Stripe integration not implemented', 'NOT_IMPLEMENTED', 501);
-  }
-  
-  async refundPayment(): Promise<any> {
-    throw new PaymentError('Stripe integration not implemented', 'NOT_IMPLEMENTED', 501);
-  }
-  
-  async getTransactionStatus(): Promise<any> {
-    throw new PaymentError('Stripe integration not implemented', 'NOT_IMPLEMENTED', 501);
-  }
-  
-  async validatePaymentMethod(): Promise<boolean> {
-    throw new PaymentError('Stripe integration not implemented', 'NOT_IMPLEMENTED', 501);
-  }
-}
+import { StripePaymentService } from './stripe-payment-service';
 
 class PayPalPaymentService implements PaymentProviderInterface {
   name: PaymentProvider = 'paypal';
@@ -38,6 +18,10 @@ class PayPalPaymentService implements PaymentProviderInterface {
   }
   
   async refundPayment(): Promise<any> {
+    throw new PaymentError('PayPal integration not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+  
+  async capturePayment(): Promise<any> {
     throw new PaymentError('PayPal integration not implemented', 'NOT_IMPLEMENTED', 501);
   }
   
@@ -61,6 +45,10 @@ class CoinbasePaymentService implements PaymentProviderInterface {
     throw new PaymentError('Coinbase integration not implemented', 'NOT_IMPLEMENTED', 501);
   }
   
+  async capturePayment(): Promise<any> {
+    throw new PaymentError('Coinbase integration not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+  
   async getTransactionStatus(): Promise<any> {
     throw new PaymentError('Coinbase integration not implemented', 'NOT_IMPLEMENTED', 501);
   }
@@ -78,6 +66,10 @@ class BankTransferPaymentService implements PaymentProviderInterface {
   }
   
   async refundPayment(): Promise<any> {
+    throw new PaymentError('Bank transfer integration not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+  
+  async capturePayment(): Promise<any> {
     throw new PaymentError('Bank transfer integration not implemented', 'NOT_IMPLEMENTED', 501);
   }
   
