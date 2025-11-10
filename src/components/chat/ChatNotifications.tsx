@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useConversations } from '@/hooks/useConversations';
+import { useQuery } from '@tanstack/react-query';
+import { conversationsAPI } from '@/lib/api';
 import Link from 'next/link';
 
 interface ChatNotificationsProps {
@@ -18,7 +20,15 @@ interface ChatNotificationsProps {
 }
 
 export function ChatNotifications({ className = '' }: ChatNotificationsProps) {
-  const { conversations, unreadMessagesCount } = useConversations();
+  const { conversations } = useConversations();
+
+  // Derive unread count from cached conversations using a select function
+  const { data: unreadMessagesCount = 0 } = useQuery({
+    queryKey: ['conversations'],
+    queryFn: conversationsAPI.getAll,
+    select: (convs: Array<{ unreadCount?: number }>) =>
+      convs.reduce((sum, c) => sum + (c.unreadCount || 0), 0),
+  });
 
   const formatTimeAgo = (dateString: string) => {
     const now = new Date();

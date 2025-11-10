@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useConversations } from "@/hooks/useConversations"
+import { useQuery } from "@tanstack/react-query"
+import { conversationsAPI } from "@/lib/api"
 import { usePaymentNotifications } from "@/hooks/usePaymentNotifications"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
@@ -23,7 +25,15 @@ interface UnifiedNotificationsProps {
 }
 
 export function UnifiedNotifications({ className }: UnifiedNotificationsProps) {
-  const { conversations, unreadMessagesCount } = useConversations()
+  const { conversations } = useConversations()
+
+  // Derive unread count from cached conversations using a select function
+  const { data: unreadMessagesCount = 0 } = useQuery({
+    queryKey: ["conversations"],
+    queryFn: conversationsAPI.getAll,
+    select: (convs: Array<{ unreadCount?: number }>) =>
+      convs.reduce((sum, c) => sum + (c.unreadCount || 0), 0),
+  })
   const { 
     notifications: paymentNotifications, 
     markAsRead, 
