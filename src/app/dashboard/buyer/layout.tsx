@@ -23,8 +23,10 @@ import {
   Package,
   Search,
   X,
-  CreditCard
+  CreditCard,
+  Trash2
 } from 'lucide-react';
+import { useCart } from '@/hooks/useCart';
 
 const sidebarItems = [
   {
@@ -96,9 +98,7 @@ function Sidebar({ className }: { className?: string }) {
 function TopHeader() {
   const { data: session } = useSession();
   const { conversations, unreadMessagesCount, loading: conversationsLoading } = useConversations();
-  
-  // Mock shopping cart count - in a real app, this would come from a cart context/hook
-  const cartItemCount = 2;
+  const { state: cart, cartCount, totalAmount, removeItem } = useCart();
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' });
@@ -110,10 +110,7 @@ function TopHeader() {
     console.log('Notifications clicked');
   };
 
-  const handleCartClick = () => {
-    // Navigate to orders/cart page
-    window.location.href = '/dashboard/buyer/orders';
-  };
+  // Cart dropdown handled via trigger below
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -231,24 +228,66 @@ function TopHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Shopping Cart Button with Badge */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="relative"
-          onClick={handleCartClick}
-        >
-          <ShoppingCart className="h-5 w-5" />
-          {cartItemCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center p-0 text-xs"
+        {/* Shopping Cart Dropdown with live count */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative"
             >
-              {cartItemCount}
-            </Badge>
-          )}
-          <span className="sr-only">Shopping Cart</span>
-        </Button>
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center p-0 text-xs"
+                >
+                  {cartCount}
+                </Badge>
+              )}
+              <span className="sr-only">Shopping Cart</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <div className="px-3 py-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Your Cart</p>
+                <p className="text-xs text-muted-foreground">Items: {cartCount}</p>
+              </div>
+            </div>
+            <DropdownMenuSeparator />
+            <div className="max-h-64 overflow-auto">
+              {cart.items.length === 0 ? (
+                <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                  Cart is empty
+                </div>
+              ) : (
+                cart.items.map((item) => (
+                  <div key={item.listingId} className="px-3 py-2 flex items-center gap-3">
+                    {item.image && (
+                      <div className="w-10 h-10 relative overflow-hidden rounded">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.image} alt={item.title} className="object-cover w-10 h-10" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium line-clamp-1">{item.title}</p>
+                      <p className="text-xs text-muted-foreground">{item.quantity} × {item.price} {item.currency}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => removeItem(item.listingId)} aria-label="Remove">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+            <DropdownMenuSeparator />
+            <div className="px-3 py-2 flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Total</span>
+              <span className="text-sm font-semibold">{totalAmount.toFixed(2)}</span>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
         
         <Link href="/games">
           <Button variant="outline" size="sm" className="hidden sm:flex">
