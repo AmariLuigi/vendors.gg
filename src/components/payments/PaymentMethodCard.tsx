@@ -69,6 +69,11 @@ export function PaymentMethodCard({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-medium">{getCardBrand()}</span>
+                {paymentMethod.provider && (
+                  <Badge variant="outline" className="text-xs capitalize">
+                    {paymentMethod.provider}
+                  </Badge>
+                )}
                 {paymentMethod.isDefault && (
                   <Badge variant="secondary" className="text-xs">
                     <Star className="size-3 mr-1 fill-current" />

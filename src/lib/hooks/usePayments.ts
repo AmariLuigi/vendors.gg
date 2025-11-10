@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import {
@@ -369,10 +370,33 @@ export function usePaymentProcessing() {
         body: JSON.stringify(paymentData),
       });
 
-      const data: ApiResponse<PaymentTransaction> = await response.json();
+      const data: ApiResponse<any> = await response.json();
 
       if (data.success) {
-        toast.success('Payment processed successfully');
+        const requiresAction = data?.data?.paymentResponse?.requiresAction;
+        const clientSecret = data?.data?.paymentResponse?.clientSecret;
+
+        if (requiresAction && clientSecret) {
+          try {
+            const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string;
+            const stripe = await loadStripe(publishableKey);
+            if (!stripe) throw new Error('Stripe failed to initialize');
+
+            const result = await stripe.confirmCardPayment(clientSecret);
+            if (result.error) {
+              toast.error(result.error.message || 'Additional authentication failed');
+            } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+              toast.success('Payment authenticated successfully');
+            } else {
+              toast.info('Payment requires further processing');
+            }
+          } catch (err: any) {
+            console.error('❌ Stripe 3DS confirmation error:', err);
+            toast.error(err?.message || 'Failed to confirm payment');
+          }
+        } else {
+          toast.success('Payment processed successfully');
+        }
         return data.data;
       } else {
         setError(data.error || 'Payment processing failed');

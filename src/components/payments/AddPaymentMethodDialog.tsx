@@ -217,22 +217,42 @@ export function AddPaymentMethodDialog({ children, onSuccess }: AddPaymentMethod
 
       // Add type-specific masked details (API expects maskedDetails, not raw details)
       if (data.type === 'credit_card' || data.type === 'debit_card') {
-        // Extract last 4 digits and determine card brand
+        // Attempt to create Stripe PaymentMethod server-side
         const cardNumber = data.cardNumber!.replace(/\s/g, '');
-        const last4 = cardNumber.slice(-4);
-        
-        // Simple brand detection (in production, use a proper library)
-        let brand = 'unknown';
-        if (cardNumber.startsWith('4')) brand = 'visa';
-        else if (cardNumber.startsWith('5') || cardNumber.startsWith('2')) brand = 'mastercard';
-        else if (cardNumber.startsWith('3')) brand = 'amex';
-        
-        paymentMethodData.maskedDetails = {
-          last4,
-          brand,
-          expiryMonth: parseInt(data.expiryMonth!),
-          expiryYear: parseInt(data.expiryYear!),
-          holderName: data.cardholderName!,
+        try {
+          const stripeResp = await fetch('/api/payments/stripe/methods', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              number: cardNumber,
+              exp_month: parseInt(data.expiryMonth!),
+              exp_year: parseInt(data.expiryYear!),
+              cvc: data.cvv!,
+              name: data.cardholderName!,
+            })
+          });
+          const stripeData = await stripeResp.json();
+          if (stripeData?.success) {
+            paymentMethodData.provider = 'stripe';
+            paymentMethodData.maskedDetails = stripeData.data?.maskedDetails;
+          } else {
+            throw new Error(stripeData?.error || 'Stripe not configured');
+          }
+        } catch (err) {
+          // Fallback: store masked card details without Stripe linkage (mock/local)
+          let brand = 'unknown';
+          if (cardNumber.startsWith('4')) brand = 'visa';
+          else if (cardNumber.startsWith('5') || cardNumber.startsWith('2')) brand = 'mastercard';
+          else if (cardNumber.startsWith('3')) brand = 'amex';
+          const last4 = cardNumber.slice(-4);
+          paymentMethodData.provider = 'mock';
+          paymentMethodData.maskedDetails = {
+            last4,
+            brand,
+            expiryMonth: parseInt(data.expiryMonth!),
+            expiryYear: parseInt(data.expiryYear!),
+            holderName: data.cardholderName!,
+          };
         }
       } else if (data.type === 'paypal') {
         paymentMethodData.maskedDetails = { 

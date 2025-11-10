@@ -179,6 +179,11 @@ export default function CheckoutPage() {
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4" />
                             <span>{m.type.replace('_', ' ')} {m.isDefault ? '(Default)' : ''}</span>
+                            {m.provider && (
+                              <Badge variant="outline" className="text-xs capitalize">
+                                {m.provider}
+                              </Badge>
+                            )}
                           </div>
                         </SelectItem>
                       ))}

@@ -191,16 +191,38 @@ export class StripePaymentService implements PaymentProviderInterface {
   }
 
   /**
-   * Create payment method from card details
+   * Create payment method using provider interface-compatible request
    */
-  async createPaymentMethod(cardDetails: {
-    number: string;
-    exp_month: number;
-    exp_year: number;
-    cvc: string;
-    name?: string;
-  }): Promise<any> {
+  async createPaymentMethod(request: {
+    type: 'card' | string;
+    cardDetails?: {
+      number: string;
+      exp_month: number;
+      exp_year: number;
+      cvc: string;
+      name?: string;
+    };
+  }): Promise<{
+    paymentMethodId: string;
+    type: 'credit_card';
+    maskedDetails: {
+      last4?: string;
+      brand?: string;
+      expiryMonth?: number;
+      expiryYear?: number;
+      holderName?: string;
+      stripePaymentMethodId?: string;
+    };
+    providerResponse?: any;
+  }> {
     try {
+      if (request.type !== 'card') {
+        throw new PaymentError('Unsupported payment method type for Stripe', 'UNSUPPORTED_TYPE', 400);
+      }
+      const cardDetails = request.cardDetails;
+      if (!cardDetails) {
+        throw new PaymentError('Missing card details', 'MISSING_CARD_DETAILS', 400);
+      }
       const paymentMethod = await this.stripe.paymentMethods.create({
         type: 'card',
         card: {

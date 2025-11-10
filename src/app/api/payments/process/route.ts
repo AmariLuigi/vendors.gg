@@ -124,10 +124,24 @@ export async function POST(request: NextRequest) {
     // Get payment provider
     const paymentProvider = getPaymentProvider();
 
+    // Map internal payment method to provider-specific identifier
+    let providerPaymentMethodId = validatedData.paymentMethodId;
+    if (paymentProvider.name === 'stripe') {
+      const masked = (paymentMethod?.maskedDetails || {}) as { stripePaymentMethodId?: string };
+      const stripeId = masked.stripePaymentMethodId;
+      if (!stripeId) {
+        return NextResponse.json(
+          { success: false, error: 'Stripe payment method is not linked to a Stripe ID' },
+          { status: 400 }
+        );
+      }
+      providerPaymentMethodId = stripeId;
+    }
+
     // Prepare payment request
     const paymentRequest = {
       orderId: order.id,
-      paymentMethodId: validatedData.paymentMethodId,
+      paymentMethodId: providerPaymentMethodId,
       amount: parseFloat(order.totalAmount),
       currency: (order.currency || 'USD') as Currency,
       description: `Payment for ${order.listing?.title} (Order: ${order.orderNumber})`,

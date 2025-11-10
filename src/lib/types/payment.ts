@@ -230,6 +230,29 @@ export interface PaymentProviderInterface {
   capturePayment(transactionId: string, amount: number): Promise<PaymentResponse>;
   getTransactionStatus(transactionId: string): Promise<TransactionStatus>;
   validatePaymentMethod(paymentMethod: Partial<PaymentMethod>): Promise<boolean>;
+  // Optional provider-specific creation of payment methods (Stripe, etc.)
+  createPaymentMethod?(request: {
+    type: 'card' | string;
+    cardDetails?: {
+      number: string;
+      exp_month: number;
+      exp_year: number;
+      cvc: string;
+      name?: string;
+    };
+  }): Promise<{
+    paymentMethodId: string;
+    type: PaymentMethodType;
+    maskedDetails: {
+      last4?: string;
+      brand?: string;
+      expiryMonth?: number;
+      expiryYear?: number;
+      holderName?: string;
+      stripePaymentMethodId?: string;
+    };
+    providerResponse?: any;
+  }>;
 }
 
 // Fee Calculation Interface

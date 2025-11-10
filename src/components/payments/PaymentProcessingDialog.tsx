@@ -183,6 +183,11 @@ export function PaymentProcessingDialog({
                         <div className="flex items-center gap-2">
                           <CreditCard className="size-4" />
                           <span>{getPaymentMethodDisplay(method)}</span>
+                          {method.provider && (
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {method.provider}
+                            </Badge>
+                          )}
                           {method.isDefault && (
                             <Badge variant="secondary" className="text-xs">Default</Badge>
                           )}

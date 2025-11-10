@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { paymentMethods } from '@/lib/db/schema';
@@ -20,7 +21,13 @@ const createPaymentMethodSchema = z.object({
     brand: z.string().optional(),
     expiryMonth: z.number().int().min(1).max(12).optional(),
     expiryYear: z.number().int().min(2024).optional(),
-    holderName: z.string().optional()
+    holderName: z.string().optional(),
+    // Provider-specific identifiers and masked data
+    stripePaymentMethodId: z.string().optional(),
+    email: z.string().optional(),
+    accountNumber: z.string().optional(),
+    routingNumber: z.string().optional(),
+    walletAddress: z.string().optional(),
   }).optional(),
   billingAddress: z.object({
     street: z.string().min(1),
@@ -48,7 +55,16 @@ const updatePaymentMethodSchema = z.object({
 // GET /api/payments/methods - Get user payment methods
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    let session: Session | null = null;
+    try {
+      session = await getServerSession(authOptions) as Session | null;
+    } catch (sessionError) {
+      console.warn('⚠️ Failed to retrieve session in GET /api/payments/methods:', sessionError);
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -91,7 +107,7 @@ export async function GET(request: NextRequest) {
 // PATCH /api/payments/methods - Update payment method
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions) as Session | null;
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -159,7 +175,7 @@ export async function PATCH(request: NextRequest) {
 // DELETE /api/payments/methods - Delete payment method
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions) as Session | null;
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -211,7 +227,7 @@ export async function DELETE(request: NextRequest) {
 // POST /api/payments/methods - Add new payment method
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions) as Session | null;
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

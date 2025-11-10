@@ -206,7 +206,17 @@ export class PaymentFactory {
   private initializeProviders(): void {
     // Initialize all available providers
     this.providers.set('mock', new MockPaymentService());
-    this.providers.set('stripe', new StripePaymentService());
+
+    // Conditionally initialize Stripe to avoid crashing when not configured
+    try {
+      if (process.env.STRIPE_SECRET_KEY) {
+        this.providers.set('stripe', new StripePaymentService());
+      } else {
+        console.warn('Stripe not configured (STRIPE_SECRET_KEY missing). Skipping Stripe provider initialization.');
+      }
+    } catch (error) {
+      console.warn('Failed to initialize Stripe provider. Falling back to mock.', error);
+    }
     this.providers.set('paypal', new PayPalPaymentService());
     this.providers.set('coinbase', new CoinbasePaymentService());
     this.providers.set('bank_transfer', new BankTransferPaymentService());
@@ -214,11 +224,15 @@ export class PaymentFactory {
 
   public getProvider(providerName?: PaymentProvider): PaymentProviderInterface {
     const provider = providerName || this.configManager.getProvider();
-    
+
+    // If requested provider is unavailable (e.g., Stripe missing), gracefully fall back to mock
     const service = this.providers.get(provider);
     if (!service) {
+      console.warn(`Payment provider '${provider}' unavailable. Using 'mock' provider instead.`);
+      const fallback = this.providers.get('mock');
+      if (fallback) return fallback;
       throw new PaymentError(
-        `Payment provider '${provider}' not found`,
+        `Payment provider '${provider}' not available and no fallback found`,
         'PROVIDER_NOT_FOUND',
         404
       );
