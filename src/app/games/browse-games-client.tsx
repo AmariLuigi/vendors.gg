@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { sanitizeImageArray, sanitizeImageUrl } from '@/lib/image-utils';
+import { useCart } from '@/hooks/useCart';
 
 interface Listing {
   id: string;
@@ -53,6 +54,7 @@ interface BrowseGamesClientProps {
 }
 
 export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
+  const { addItem } = useCart();
   const { data: session } = useSession();
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
   
@@ -362,11 +364,30 @@ export function BrowseGamesClient({ listingsData }: BrowseGamesClientProps) {
                     </div>
                   )}
                 </div>
-                <Button size="sm" asChild>
-                  <Link href={`/listings/${listing.id}`}>
-                    View Details
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" asChild>
+                    <Link href={`/listings/${listing.id}`}>
+                      View Details
+                    </Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const firstImage = Array.isArray(listing.images) && listing.images.length > 0 ? listing.images[0] : undefined;
+                      addItem({
+                        listingId: listing.id,
+                        title: listing.title,
+                        price: parseFloat(String(listing.price)),
+                        currency: listing.currency,
+                        quantity: 1,
+                        image: firstImage,
+                      });
+                    }}
+                  >
+                    Add to Cart
+                  </Button>
+                </div>
               </div>
             </CardFooter>
           </Card>

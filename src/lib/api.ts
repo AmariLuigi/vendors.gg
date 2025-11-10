@@ -137,3 +137,48 @@ export const leaguesAPI = {
   getAll: () => fetch(`${API_BASE_URL}/leagues`).then(res => res.json()),
   getByGame: (gameId: string) => fetch(`${API_BASE_URL}/leagues?gameId=${gameId}`).then(res => res.json()),
 };
+
+// Cart API
+export const cartAPI = {
+  get: async () => {
+    const res = await fetch(`${API_BASE_URL}/cart`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Failed to fetch cart: ${res.status}`);
+    return res.json();
+  },
+  addItem: async (item: any) => {
+    const res = await fetch(`${API_BASE_URL}/cart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', item })
+    });
+    if (!res.ok) throw new Error(`Failed to add item: ${res.status}`);
+    return res.json();
+  },
+  updateItem: async (listingId: string, quantity: number) => {
+    const res = await fetch(`${API_BASE_URL}/cart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update', listingId, quantity })
+    });
+    if (!res.ok) throw new Error(`Failed to update item: ${res.status}`);
+    return res.json();
+  },
+  removeItem: async (listingId: string) => {
+    const res = await fetch(`${API_BASE_URL}/cart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'remove', listingId })
+    });
+    if (!res.ok) throw new Error(`Failed to remove item: ${res.status}`);
+    return res.json();
+  },
+  clear: async () => {
+    const res = await fetch(`${API_BASE_URL}/cart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'clear' })
+    });
+    if (!res.ok) throw new Error(`Failed to clear cart: ${res.status}`);
+    return res.json();
+  },
+};

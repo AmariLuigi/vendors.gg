@@ -7,13 +7,15 @@ import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ShoppingCart, Search, Shield, LogOut, Settings, MessageSquare } from 'lucide-react';
+import { ShoppingCart, Search, Shield, LogOut, Settings, MessageSquare, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UnifiedNotifications } from '@/components/notifications';
 import { motion } from 'framer-motion';
+import { useCart } from '@/hooks/useCart';
 
 const Header: React.FC = () => {
   const { data: session, status } = useSession();
+  const { state: cart, cartCount, totalAmount, removeItem } = useCart();
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' });
@@ -110,15 +112,60 @@ const Header: React.FC = () => {
             )}
 
             {/* Cart */}
-            <Button variant="ghost" size="sm" className="relative">
-              <ShoppingCart className="w-5 h-5" />
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs"
-              >
-                2
-              </Badge>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="relative">
+                  <ShoppingCart className="w-5 h-5" />
+                  {cartCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {cartCount}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                <div className="px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">Your Cart</p>
+                    <p className="text-xs text-muted-foreground">Items: {cartCount}</p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <div className="max-h-64 overflow-auto">
+                  {cart.items.length === 0 ? (
+                    <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                      Cart is empty
+                    </div>
+                  ) : (
+                    cart.items.map((item) => (
+                      <div key={item.listingId} className="px-3 py-2 flex items-center gap-3">
+                        {item.image && (
+                          <div className="w-10 h-10 relative overflow-hidden rounded">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={item.image} alt={item.title} className="object-cover w-10 h-10" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <p className="text-sm font-medium line-clamp-1">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">{item.quantity} × {item.price} {item.currency}</p>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => removeItem(item.listingId)} aria-label="Remove">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <DropdownMenuSeparator />
+                <div className="px-3 py-2 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Total</span>
+                  <span className="text-sm font-semibold">{totalAmount.toFixed(2)}</span>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Authentication */}
             {status === 'loading' ? (

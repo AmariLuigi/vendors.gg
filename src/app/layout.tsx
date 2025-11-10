@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
+import { CartProvider } from "@/components/providers/CartProvider";
 import { AnimationProvider } from "@/components/providers/AnimationProvider";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
@@ -56,13 +57,15 @@ export default function RootLayout({
         style={{ backgroundColor: 'oklch(0.145 0 0)', margin: 0, padding: 0, minHeight: '100vh' }}
       >
         <SessionProvider>
-          <AnimationProvider>
-            <LayoutWrapper>
-              <ConditionalLayout>
-                {children}
-              </ConditionalLayout>
-            </LayoutWrapper>
-          </AnimationProvider>
+          <CartProvider>
+            <AnimationProvider>
+              <LayoutWrapper>
+                <ConditionalLayout>
+                  {children}
+                </ConditionalLayout>
+              </LayoutWrapper>
+            </AnimationProvider>
+          </CartProvider>
         </SessionProvider>
       </body>
     </html>

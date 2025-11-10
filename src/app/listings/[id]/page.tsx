@@ -14,6 +14,7 @@ import { listingsAPI } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { sanitizeImageArray } from '@/lib/image-utils';
+import { useCart } from '@/hooks/useCart';
 
 interface Listing {
   id: string;
@@ -70,6 +71,7 @@ export default function ListingDetailPage() {
   const listingId = params.id as string;
   const { data: session } = useSession();
   const { favorites, addToFavorites, removeFromFavorites, loading: favoritesLoading } = useFavorites();
+  const { addItem } = useCart();
   
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
@@ -392,6 +394,23 @@ export default function ListingDetailPage() {
                 <div className="space-y-3">
                   <Button className="w-full" size="lg">
                     Buy Now
+                  </Button>
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => {
+                      const firstImage = Array.isArray(listing.images) && listing.images.length > 0 ? listing.images[0] : undefined;
+                      addItem({
+                        listingId: listing.id,
+                        title: listing.title,
+                        price: listing.price,
+                        currency: listing.currency,
+                        quantity: 1,
+                        image: firstImage,
+                      });
+                    }}
+                  >
+                    Add to Cart
                   </Button>
                   
                   <StartConversationButton
