@@ -71,7 +71,8 @@ export const securityConfig: SecurityConfig = {
   
   rateLimit: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 100, // Limit each IP to 100 requests per windowMs
+    // Relax rate limits during development to avoid interfering with HMR/prefetch
+    maxRequests: process.env.NODE_ENV === 'production' ? 100 : 5000,
     skipSuccessfulRequests: false,
   },
   

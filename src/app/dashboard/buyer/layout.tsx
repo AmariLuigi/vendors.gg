@@ -286,6 +286,13 @@ function TopHeader() {
               <span className="text-sm text-muted-foreground">Total</span>
               <span className="text-sm font-semibold">{totalAmount.toFixed(2)}</span>
             </div>
+            <div className="px-3 pb-3">
+              <Link href="/checkout" className="w-full">
+                <Button className="w-full" disabled={cart.items.length === 0}>
+                  Proceed to Checkout
+                </Button>
+              </Link>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
         
