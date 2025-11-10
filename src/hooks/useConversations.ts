@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { conversationsAPI } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 interface Conversation {
   id: string;
@@ -48,50 +48,37 @@ interface UseConversationsReturn {
 }
 
 export function useConversations(): UseConversationsReturn {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<Conversation[], Error>({
+    queryKey: ['conversations'],
+    queryFn: conversationsAPI.getAll,
+    staleTime: 60_000,
+    gcTime: 300_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 1,
+  });
 
-  const fetchConversations = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await conversationsAPI.getAll();
-      
-      if (Array.isArray(data)) {
-        setConversations(data);
-      } else {
-        console.error('Invalid conversations data:', data);
-        setError('Failed to load conversations');
-        setConversations([]);
-      }
-    } catch (err) {
-      console.error('Error fetching conversations:', err);
-      setError('Failed to load conversations');
-      setConversations([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const conversations = Array.isArray(data) ? data : [];
 
-  useEffect(() => {
-    fetchConversations();
-  }, []);
+  const activeChatsCount = conversations.filter((conv) => conv.status === 'active').length;
 
-  // Calculate active chats count (conversations with status 'active')
-  const activeChatsCount = conversations.filter(conv => conv.status === 'active').length;
-
-  // Calculate total unread messages count
   const unreadMessagesCount = conversations.reduce((total, conv) => {
     return total + (conv.unreadCount || 0);
   }, 0);
 
   return {
     conversations,
-    loading,
-    error,
+    loading: isLoading,
+    error: error ? (error.message || 'Failed to load conversations') : null,
     activeChatsCount,
     unreadMessagesCount,
-    refetch: fetchConversations,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }

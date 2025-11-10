@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
-import { conversationsAPI } from '@/lib/api';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { EmptyChat } from '@/components/chat/EmptyChat';
 import { motion } from 'framer-motion';
+import { useConversations } from '@/hooks/useConversations';
 
 interface Conversation {
   id: string;
@@ -48,20 +48,13 @@ export function ChatPageContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const conversationParam = searchParams.get('conversation');
-  
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  const { conversations, loading, error, refetch } = useConversations();
+
   const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationParam);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   
   // Get current user ID from session
   const currentUserId = session?.user?.id;
-
-  useEffect(() => {
-    if (currentUserId) {
-      loadConversations();
-    }
-  }, [currentUserId]);
 
   // Auto-select conversation from URL parameter
   useEffect(() => {
@@ -69,24 +62,6 @@ export function ChatPageContent() {
       setSelectedConversation(conversationParam);
     }
   }, [conversationParam, conversations]);
-
-  const loadConversations = async () => {
-    try {
-      setLoading(true);
-      const response = await conversationsAPI.getAll();
-      
-      if (response.error) {
-        setError(response.error);
-      } else {
-        setConversations(response.data || []);
-      }
-    } catch (err) {
-      console.error('Error loading conversations:', err);
-      setError('Failed to load conversations');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleConversationSelect = (conversationId: string) => {
     setSelectedConversation(conversationId);
@@ -97,32 +72,14 @@ export function ChatPageContent() {
     window.history.replaceState({}, '', url.toString());
   };
 
-  const handleNewMessage = (conversationId: string, message: any) => {
-    setConversations(prev => 
-      prev.map(conv => 
-        conv.id === conversationId 
-          ? { 
-              ...conv, 
-              lastMessage: {
-                content: message.content,
-                senderId: message.senderId,
-                createdAt: message.createdAt
-              },
-              lastMessageAt: message.createdAt
-            }
-          : conv
-      )
-    );
+  const handleNewMessage = async (_conversationId: string, _message: any) => {
+    // For now, just refetch to update last message from server
+    await refetch();
   };
 
-  const handleMarkAsRead = (conversationId: string) => {
-    setConversations(prev => 
-      prev.map(conv => 
-        conv.id === conversationId 
-          ? { ...conv, unreadCount: 0 }
-          : conv
-      )
-    );
+  const handleMarkAsRead = async (_conversationId: string) => {
+    // TODO: call API to mark messages as read, then refetch
+    await refetch();
   };
 
   if (!session) {
@@ -143,7 +100,7 @@ export function ChatPageContent() {
           <h2 className="text-2xl font-semibold mb-2 text-destructive">Error</h2>
           <p className="text-muted-foreground mb-4">{error}</p>
           <button 
-            onClick={loadConversations}
+            onClick={() => void refetch()}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
             Try Again
@@ -172,7 +129,7 @@ export function ChatPageContent() {
           selectedConversation={selectedConversation}
           onConversationSelect={handleConversationSelect}
           currentUserId={currentUserId || ''}
-          onRefresh={loadConversations}
+          onRefresh={() => void refetch()}
         />
       </motion.div>
 

@@ -6,6 +6,7 @@ import { CartProvider } from "@/components/providers/CartProvider";
 import { AnimationProvider } from "@/components/providers/AnimationProvider";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,17 +57,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ backgroundColor: 'oklch(0.145 0 0)', margin: 0, padding: 0, minHeight: '100vh' }}
       >
-        <SessionProvider>
-          <CartProvider>
-            <AnimationProvider>
-              <LayoutWrapper>
-                <ConditionalLayout>
-                  {children}
-                </ConditionalLayout>
-              </LayoutWrapper>
-            </AnimationProvider>
-          </CartProvider>
-        </SessionProvider>
+        <ReactQueryProvider>
+          <SessionProvider>
+            <CartProvider>
+              <AnimationProvider>
+                <LayoutWrapper>
+                  <ConditionalLayout>
+                    {children}
+                  </ConditionalLayout>
+                </LayoutWrapper>
+              </AnimationProvider>
+            </CartProvider>
+          </SessionProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );
